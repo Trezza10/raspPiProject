@@ -128,6 +128,27 @@ async def getABitch(ctx):
     writeToAccountDb(account)
     
     await ctx.channel.send(embed=embedVar)
+    
+# The stonks boi
+@bot.command(
+	profile="stonks",
+	brief="stonks"
+)
+async def stonks(ctx):
+    embedVar = discord.Embed(title='BillionaireBot', description='Stonks on the market', color=0x00ff00)
+    embedVar.set_thumbnail(url=BOT_IMAGE)
+    
+    allStonks = readStonksFromDb()
+    
+    i = 1
+    for stonk in allStonks:
+        stonkName = stonk['stonk']
+        stonkValue = stonk['value']
+        embedVar.add_field(name="[" + str(i) + "] " + stonkName, value="$" + str(stonkValue) + " ", inline=False)
+        i += 1
+    
+    await ctx.channel.send(embed=embedVar)
+
 
 # Jobs
 @bot.command(
@@ -206,6 +227,12 @@ def readAccountsFromDb():
     with open("accounts.json", "r") as file:
         accounts = json.load(file)
     return accounts
+
+# Read Stonks 
+def readStonksFromDb():
+    with open("stonks.json", "r") as file:
+        allStonks = json.load(file)
+    return allStonks
 
 
 # Write to Account Database
