@@ -1,19 +1,23 @@
 [
     {
         "name": "Labor Slave",
-        "rate": "1"
+        "rate": "1",
+        "jobId": "0"
     },
     {
         "name": "Mickey Dee's Employee",
-        "rate": "8"
+        "rate": "8",
+        "jobId": "1"
     },
     {
         "name": "Software Engineer",
-        "rate": "200"
+        "rate": "200",
+        "jobId": "2"
     },
     {
         "name": "Only Fans E-Girl",
-        "rate": "1"
+        "rate": "1",
+        "jobId": "3"
     }
 
 ]

@@ -12,10 +12,6 @@ Things to do to become a billionaire
         - $1 dollar an hour (24 dollars per day bc you're a slave)
     - McDonald's Employee
         - $8 dollars an hour (64 dollars per day)
-    - 
-2. Get an education
-    - Cost money
-    - Better options out of college
 
 3. PASSIVE INCOME
     - Real estate
@@ -45,8 +41,6 @@ Things to do to become a billionaire
         - 50/50 chance to double your money put in
     - Black jack (!blackjack)
         - !hit, !stay
-    
-
 '''
 
 channelId = 864619752991096833
@@ -68,136 +62,142 @@ with open("jobs.json", "r") as file:
 bot = commands.Bot(command_prefix="!")
 
 
-# Creates account 
+# Creates account
 @bot.command(
-	profile="Create account",
-	brief="Create account"
+    profile="Create account",
+    brief="Create account"
 )
 async def becomeABillionaire(ctx):
 
     with open("accounts.json", "r") as file:
         accounts = json.load(file)
 
-    
     name = ctx.message.author.name
     index = -1
     for account in accounts:
         if (account['name'] == name):
             index = accounts.index(account)
-    
+
     if (index == -1):
         account = {}
         account['name'] = ctx.message.author.name
-        account['job'] = {'jobTitle': 'Jobless', 'rate':'0.00'}
+        account['job'] = {'jobTitle': 'Jobless', 'rate': '0.00'}
         account['value'] = '0.00'
         account['debt'] = '0.00'
         account['bitch'] = {'name': 'Nobody', 'value': 0}
 
-        
-        #with open("bitches.json", "r") as file:
+        # with open("bitches.json", "r") as file:
         #    bitches = json.load(file)
         #randomBitch = bitches[random.randint(0,len(bitches)-1)]
         # Create embed message display
 
         embedVar = displayProfile(account, ctx.message.author.avatar_url)
-    
+
         writeToAccountDb(account)
 
         await ctx.channel.send(embed=embedVar)
-    else: 
-        embedVar = discord.Embed(title=name, description="Already has an account", color=0x00ff00)
+    else:
+        embedVar = discord.Embed(
+            title=name, description="Already has an account", color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
-
 
 
 # Random bitch of the day
 @bot.command(
-	profile="Find your bad bitch TODAY",
-	brief="Find your bad bitch TODAY"
+    profile="Find your bad bitch TODAY",
+    brief="Find your bad bitch TODAY"
 )
 async def getABitch(ctx):
-    randomBitch = bitches[random.randint(0,len(bitches)-1)]
+    randomBitch = bitches[random.randint(0, len(bitches)-1)]
     accounts = readAccountsFromDb()
     for _account in accounts:
         if _account['name'] == ctx.message.author.name:
             account = _account
             break
     account['bitch']['name'] = randomBitch
-    account['bitch']['value'] = random.randint(0,100)
+    account['bitch']['value'] = random.randint(0, 100)
     embedVar = displayProfile(account, ctx.message.author.avatar_url)
     writeToAccountDb(account)
-    
+
     await ctx.channel.send(embed=embedVar)
-    
+
 # The stonks boi
+
+
 @bot.command(
-	profile="stonks",
-	brief="stonks"
+    profile="stonks",
+    brief="stonks"
 )
 async def stonks(ctx):
-    embedVar = discord.Embed(title='BillionaireBot', description='Stonks on the market', color=0x00ff00)
+    embedVar = discord.Embed(title='BillionaireBot',
+                             description='Stonks on the market', color=0x00ff00)
     embedVar.set_thumbnail(url=BOT_IMAGE)
-    
+
     allStonks = readStonksFromDb()
-    
+
     i = 1
     for stonk in allStonks:
         stonkName = stonk['stonk']
         stonkValue = stonk['value']
-        embedVar.add_field(name="[" + str(i) + "] " + stonkName, value="$" + str(stonkValue) + " ", inline=False)
+        embedVar.add_field(name="[" + str(i) + "] " + stonkName,
+                           value="$" + str(stonkValue) + " ", inline=False)
         i += 1
-    
+
     await ctx.channel.send(embed=embedVar)
 
 
 # Jobs
 @bot.command(
-	profile="Jobs",
-	brief="Jobs"
+    profile="Jobs",
+    brief="Jobs"
 )
-async def jobs(ctx):    
-    embedVar = discord.Embed(title='BillionaireBot', description='Jobs on the market', color=0x00ff00)
+async def jobs(ctx):
+    embedVar = discord.Embed(title='BillionaireBot',
+                             description='Jobs on the market', color=0x00ff00)
     embedVar.set_thumbnail(url=BOT_IMAGE)
 
     i = 1
     for job in allJobs:
         jobName = job['name']
         jobRate = job['rate']
-        embedVar.add_field(name="[" + str(i) + "] " + jobName, value="$" + jobRate + " per hour", inline=False)
+        embedVar.add_field(name="[" + str(i) + "] " + jobName,
+                           value="$" + jobRate + " per hour", inline=False)
         i += 1
-    
+
     await ctx.channel.send(embed=embedVar)
 
-# Jobs
+# get a job
+
+
 @bot.command(
-	profile="get a job",
-	brief="get a job"
+    profile="get a job",
+    brief="get a job"
 )
-async def getJob(ctx, args):
+async def getAJob(ctx, args):
     if (args.isnumeric()):
         job = int(args) - 1
         if not(0 <= job < len(allJobs)):
             return
-            
+
     accounts = readAccountsFromDb()
     for _account in accounts:
         if _account['name'] == ctx.message.author.name:
             account = _account
             break
-    
+
     account['job']['jobTitle'] = allJobs[job]['name']
     account['job']['rate'] = allJobs[job]['rate']
 
     embedVar = displayProfile(account, ctx.message.author.avatar_url)
     writeToAccountDb(account)
-    
-    await ctx.channel.send(embed=embedVar)   
+
+    await ctx.channel.send(embed=embedVar)
 
 
 # What's your profile
 @bot.command(
-	profile="profile",
-	brief="profile"
+    profile="profile",
+    brief="profile"
 )
 async def profile(ctx):
     accounts = readAccountsFromDb()
@@ -207,28 +207,90 @@ async def profile(ctx):
             break
 
     embedVar = displayProfile(account, ctx.message.author.avatar_url)
-    
+
     await ctx.channel.send(embed=embedVar)
 
+
+# Buy/sell stonks
+@bot.command(
+    profile="buy a stonk",
+    brief="buy a stonk"
+)
+async def buyStonks(ctx, arg1, arg2):
+    print(arg1, arg2)
+
+    with open("stonks.json", "r") as file:
+        allStonks = json.load(file)
+
+    if (arg1.isnumeric() and arg2.isnumeric()):
+        _stonk = int(arg1) - 1
+        if not(0 <= _stonk < len(allStonks)):
+            return
+
+    accounts = readAccountsFromDb()
+    for _account in accounts:
+        if _account['name'] == ctx.message.author.name:
+            account = _account
+            break
+    # enough money?
+    if (account['value'] >= allStonks[int(arg1)]['value'] * int(arg2)):
+        # Loop through all your stonks
+        haveStonk = False
+        for _stonk in account['stonks']:
+            # check to see if you already have stonk of it
+            if allStonks[int(arg1)]['stonk'] == _stonk['stonk']:
+                haveStonk = True
+                # append x stonks to list of that
+                _stonk['own'].append(
+                    {
+                        'priceBoughtAt': allStonks[int(arg1)]['value'],
+                        'quantity': int(arg2)
+                    }
+                )
+                print(_stonk)
+
+        if not(haveStonk):
+            account['stonks'].append(
+                {
+                    'stonk': allStonks[int(arg1)]['stonk'],
+                    'own': [
+                        {
+                            'priceBoughtAt': allStonks[int(arg1)]['value'],
+                            'quantity': int(arg2)
+                        }
+                    ]
+                }
+            )
+        # Deduct moneys
+        account['value'] -= allStonks[int(arg1)]['value'] * int(arg2)
+        embedVar = displayProfile(account, ctx.message.author.avatar_url)
+        writeToAccountDb(account)
+
+        await ctx.channel.send(embed=embedVar)
 
 
 # Display Profile
 def displayProfile(account, author_avatar_url):
-    embedVar = discord.Embed(title=account['name'], description=account['job']['jobTitle'] + " ( $" + str(account['job']['rate']) + " per/hour)", color=0x00ff00)
+    embedVar = discord.Embed(title=account['name'], description=account['job']['jobTitle'] +
+                             " ( $" + str(account['job']['rate']) + " per/hour)", color=0x00ff00)
     embedVar.set_thumbnail(url=author_avatar_url)
-    embedVar.add_field(name="Value", value="$" + account['value'], inline=False)
-    embedVar.add_field(name="Debt", value="$" + account['debt'], inline=False)
-    embedVar.add_field(name="Bitch of the day", value=account['bitch']['name'] + " (" + str(account['bitch']['value']) + ")", inline=False)
+    embedVar.add_field(name="Value", value="$" +
+                       str(account['value']), inline=False)
+    embedVar.add_field(name="Debt", value="$" + str(account['debt']), inline=False)
+    embedVar.add_field(name="Bitch of the day", value=account['bitch']['name'] + " (" + str(
+        account['bitch']['value']) + ")", inline=False)
     return embedVar
 
 
-# Read Accounts 
+# Read Accounts
 def readAccountsFromDb():
     with open("accounts.json", "r") as file:
         accounts = json.load(file)
     return accounts
 
-# Read Stonks 
+# Read Stonks
+
+
 def readStonksFromDb():
     with open("stonks.json", "r") as file:
         allStonks = json.load(file)
@@ -247,7 +309,7 @@ def writeToAccountDb(accountToWrite):
             index = accounts.index(account)
 
     with open("accounts.json", "w") as file:
-        
+
         if (index != -1):
             accounts[index] = accountToWrite
         else:
@@ -256,25 +318,23 @@ def writeToAccountDb(accountToWrite):
         json.dump(accounts, file)
 
 
-
-
 # Caculating the bitches value
-def bitchesValue(value, currentNetWorth) :
-    if (value == 0): 
+def bitchesValue(value, currentNetWorth):
+    if (value == 0):
         return currentNetWorth * 0.5
-    elif (value < 10) :
+    elif (value < 10):
         return currentNetWorth * 0.8
-    elif (value < 20) :
+    elif (value < 20):
         return currentNetWorth * 0.9
-    elif (value < 80) :
+    elif (value < 80):
         return currentNetWorth
-    elif (value < 90) :
+    elif (value < 90):
         return currentNetWorth * 1.1
-    elif (value < 99) :
+    elif (value < 99):
         return currentNetWorth * 1.2
     elif (value == 100):
         return currentNetWorth * 2
-    else: 
+    else:
         return currentNetWorth
 
 
