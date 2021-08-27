@@ -145,6 +145,15 @@ async def stonks(ctx):
 
     await ctx.channel.send(embed=embedVar)
 
+@bot.command(
+    profile="test2",
+    brief="test2"
+)
+async def test2(ctx):
+    file = discord.File("demo.png")
+    e = discord.Embed()
+    e.set_image(url="attachment://demo.png")
+    await ctx.send(file = file, embed=e)
 
 # Jobs
 @bot.command(
