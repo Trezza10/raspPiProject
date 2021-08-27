@@ -81,7 +81,7 @@ async def becomeABillionaire(ctx):
     if (index == -1):
         account = {}
         account['name'] = ctx.message.author.name
-        account['job'] = {'jobTitle': 'Jobless', 'rate': '0.00'}
+        account['job'] = {'jobTitle': 'Jobless', 'rate': 0}
         account['value'] = '0.00'
         account['debt'] = '0.00'
         account['bitch'] = {'name': 'Nobody', 'value': 0}
@@ -161,7 +161,7 @@ async def jobs(ctx):
         jobName = job['name']
         jobRate = job['rate']
         embedVar.add_field(name="[" + str(i) + "] " + jobName,
-                           value="$" + jobRate + " per hour", inline=False)
+                           value="$" + str(jobRate) + " per hour", inline=False)
         i += 1
 
     await ctx.channel.send(embed=embedVar)
