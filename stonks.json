@@ -1,1 +1,6 @@
-[{"stonk": "OWO", "value": 46.99}, {"stonk": "CUM", "value": 80.36}, {"stonk": "LUL", "value": 12.01}, {"stonk": "DOG", "value": 166.22}]
+[
+  { "stonk": "OWO", "value": 46.99, "history": [0] },
+  { "stonk": "CUM", "value": 80.36, "history": [0]  },
+  { "stonk": "LUL", "value": 12.01, "history": [0]  },
+  { "stonk": "DOG", "value": 166.22, "history": [0]  }
+]
