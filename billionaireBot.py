@@ -46,7 +46,7 @@ Things to do to become a billionaire
 channelId = 864619752991096833
 BOT_IMAGE = 'https://www.media3.hw-static.com/wp-content/uploads/xx_55026731-638x425-638x425.jpeg'
 
-file = open('token.txt')
+file = open('./../token.txt')
 token = file.read()
 file.close()
 
