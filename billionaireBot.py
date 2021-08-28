@@ -62,7 +62,46 @@ with open("jobs.json", "r") as file:
 # Creates bot with the prefix of !
 bot = commands.Bot(command_prefix="!")
 
+# Introduction
+@bot.command(
+    profile="introduction",
+    brief="introduction"
+)
+async def intro(ctx):
+    
+    embedVar = discord.Embed(
+            title='Welcome', description="\"\"Everybody here has the ability absolutely to do anything I do and much beyond, and some of you will and some of you won't.\"- Warren Buffet\"\n- BillionaireBot", color=0x00ff00)
+    await ctx.channel.send(embed=embedVar)
+    
+    embedVar = discord.Embed(
+            title='The Journey', description="One can speak about making BILLIONS... but do you have what it takes to actually EARN BILLIONS?\n\nWell now you can... for the next 30 days. I want to see who will become the first Discord **BILLIONAIRE**. \n\n\n\nYour journey starts now.", color=0x00ff00)
+    await ctx.channel.send(embed=embedVar)
+    
+    embedVar = discord.Embed(
+            title='Get Started', description="Each command is prefixed with !\n\nTo see all commands type \"!help\"", color=0x00ff00)
+    await ctx.channel.send(embed=embedVar)
 
+
+
+# Creates account
+@bot.command(
+    profile="cheat",
+    brief="cheat"
+)
+async def cheat(ctx):
+
+    with open("accounts.json", "r") as file:
+        accounts = json.load(file)
+
+    for account in accounts:
+        account['value'] = 5000.00
+        writeToAccountDb(account)
+    
+    embedVar = discord.Embed(
+            title='cheatin', description="We cheatin", color=0x00ff00)
+    await ctx.channel.send(embed=embedVar)
+    
+    
 # Creates account
 @bot.command(
     profile="Create account",
@@ -86,6 +125,7 @@ async def becomeABillionaire(ctx):
         account['value'] = '0.00'
         account['debt'] = '0.00'
         account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1}
+        account['stonks'] = []
 
         # Create embed message display
         embedVar = displayProfile(account, ctx.message.author.avatar_url)

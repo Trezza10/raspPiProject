@@ -44,4 +44,4 @@ plt.legend(names, loc ="lower right")
 var = 'test'
 plt.xlim([graphLen - 6*4, graphLen + 10])
 plt.savefig('demo.png', transparent=True)
-plt.show()
+#plt.show()
