@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import json
 import random
+import datetime 
 
 '''
 Billionaire Bot. Who has what it takes to be a billionaire by the end of the month. 
@@ -84,13 +85,9 @@ async def becomeABillionaire(ctx):
         account['job'] = {'jobTitle': 'Jobless', 'rate': 0}
         account['value'] = '0.00'
         account['debt'] = '0.00'
-        account['bitch'] = {'name': 'Nobody', 'value': 0}
+        account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1}
 
-        # with open("bitches.json", "r") as file:
-        #    bitches = json.load(file)
-        #randomBitch = bitches[random.randint(0,len(bitches)-1)]
         # Create embed message display
-
         embedVar = displayProfile(account, ctx.message.author.avatar_url)
 
         writeToAccountDb(account)
@@ -108,18 +105,28 @@ async def becomeABillionaire(ctx):
     brief="Find your bad bitch TODAY"
 )
 async def getABitch(ctx):
-    randomBitch = bitches[random.randint(0, len(bitches)-1)]
+    today = int(datetime.datetime.now().day)
     accounts = readAccountsFromDb()
     for _account in accounts:
         if _account['name'] == ctx.message.author.name:
             account = _account
             break
-    account['bitch']['name'] = randomBitch
-    account['bitch']['value'] = random.randint(0, 100)
-    embedVar = displayProfile(account, ctx.message.author.avatar_url)
-    writeToAccountDb(account)
+    if (account['bitch']['date'] < today):
+        randomBitch = bitches[random.randint(0, len(bitches)-1)]
+        randomBitchValue = random.randint(0, 100)
+        account['bitch']['name'] = randomBitch
+        account['bitch']['value'] = randomBitchValue
+        account['bitch']['date'] = today
+        currentNetWorth = account['value']
+        account['value'] = await bitchesValue(randomBitchValue, currentNetWorth, ctx)
+        embedVar = displayProfile(account, ctx.message.author.avatar_url)
+        writeToAccountDb(account)
 
-    await ctx.channel.send(embed=embedVar)
+        await ctx.channel.send(embed=embedVar)
+    else:
+        embedVar = discord.Embed(
+            title='You kinda unloyal', description="You must keep yo bitch for at least one day before finding a new side piece.", color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
 
 # The stonks boi
 
@@ -278,6 +285,44 @@ async def buyStonks(ctx, arg1, arg2):
         await ctx.channel.send(embed=embedVar)
 
 
+
+
+# sell stonks
+@bot.command(
+    profile="sell a stonk",
+    brief="sell a stonk"
+)
+async def sellStonks(ctx, arg1):
+    print(arg1)
+
+    with open("stonks.json", "r") as file:
+        allStonks = json.load(file)
+
+    if (arg1.isnumeric()):
+        _stonk = int(arg1) - 1
+        if not(0 <= _stonk < len(allStonks)):
+            return
+
+    accounts = readAccountsFromDb()
+    for _account in accounts:
+        if _account['name'] == ctx.message.author.name:
+            account = _account
+            break
+    
+    # Loop through all your stonks
+    for _stonk in account['stonks']:
+        # check to see if you already have stonk of it
+        if allStonks[int(arg1)]['stonk'] == _stonk['stonk']:
+            for own in _stonk['own']:
+                account['value'] += ((own['priceBoughtAt'] - allStonks[int(arg1)]['value']) * -1 * own['quantity'])
+                embedVar = displayProfile(account, ctx.message.author.avatar_url)
+
+            account['stonks'].remove(_stonk) 
+        
+    writeToAccountDb(account)
+    await ctx.channel.send(embed=embedVar)
+
+
 # Display Profile
 def displayProfile(account, author_avatar_url):
     embedVar = discord.Embed(title=account['name'], description=account['job']['jobTitle'] +
@@ -298,8 +343,6 @@ def readAccountsFromDb():
     return accounts
 
 # Read Stonks
-
-
 def readStonksFromDb():
     with open("stonks.json", "r") as file:
         allStonks = json.load(file)
@@ -328,20 +371,41 @@ def writeToAccountDb(accountToWrite):
 
 
 # Caculating the bitches value
-def bitchesValue(value, currentNetWorth):
+async def bitchesValue(value, currentNetWorth, ctx):
     if (value == 0):
+        embedVar = discord.Embed(
+            title='You kinda unloyal', description="You must keep yo bitch for at least one day before finding a new side piece.", color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 0.5
     elif (value < 10):
+        embedVar = discord.Embed(
+            title='You kinda unloyal', description="You must keep yo bitch for at least one day before finding a new side piece.", color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 0.8
     elif (value < 20):
+        embedVar = discord.Embed(
+            title='You kinda unloyal', description="You must keep yo bitch for at least one day before finding a new side piece.", color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 0.9
     elif (value < 80):
+        embedVar = discord.Embed(
+            title='You kinda unloyal', description="You must keep yo bitch for at least one day before finding a new side piece.", color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
         return currentNetWorth
     elif (value < 90):
+        embedVar = discord.Embed(
+            title='You kinda unloyal', description="You must keep yo bitch for at least one day before finding a new side piece.", color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 1.1
     elif (value < 99):
+        embedVar = discord.Embed(
+            title='You kinda unloyal', description="You must keep yo bitch for at least one day before finding a new side piece.", color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 1.2
     elif (value == 100):
+        embedVar = discord.Embed(
+            title='You kinda unloyal', description="You must keep yo bitch for at least one day before finding a new side piece.", color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 2
     else:
         return currentNetWorth
