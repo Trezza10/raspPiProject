@@ -10,14 +10,53 @@
         "jobId": "1"
     },
     {
-        "name": "Software Engineer",
-        "rate": "200",
+        "name": "You majored art in college",
+        "rate": "15",
         "jobId": "2"
     },
     {
-        "name": "Only Fans E-Girl",
-        "rate": "1",
+        "name": "Janitor",
+        "rate": "25",
         "jobId": "3"
+    },
+    {
+        "name": "Teacher",
+        "rate": "50",
+        "jobId": "4"
+    },
+    {
+        "name": "Plumber",
+        "rate": "125",
+        "jobId": "5"
+    },
+    {
+        "name": "Doctor",
+        "rate": "400",
+        "jobId": "6"
+    },
+    {
+        "name": "Lawyer",
+        "rate": "900",
+        "jobId": "7"
+    },
+    {
+        "name": "Twitch Streamer",
+        "rate": "1500",
+        "jobId": "8"
+    },
+    {
+        "name": "Pokemon Card Trader",
+        "rate": "4000",
+        "jobId": "9"
+    },
+    {
+        "name": "Software Engineer",
+        "rate": "10000",
+        "jobId": "11"
+    },
+    {
+        "name": "Only Fans E-Girl",
+        "rate": "69420",
+        "jobId": "12"
     }
-
 ]
