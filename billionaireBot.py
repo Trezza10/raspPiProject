@@ -39,8 +39,9 @@ Things to do to become a billionaire
         - !hit, !stay
 '''
 
-channelId = 864619752991096833
+channelId = 633465922786689024 #864619752991096833
 BOT_IMAGE = 'https://www.media3.hw-static.com/wp-content/uploads/xx_55026731-638x425-638x425.jpeg'
+JOB_AVAILABILITY = 5
 
 file = open('./../token.txt')
 token = file.read()
@@ -117,7 +118,7 @@ async def createAccount(ctx):
         account = {}
         account['name'] = ctx.message.author.name
         account['job'] = {'jobTitle': 'Jobless', 'rate': 0}
-        account['value'] = 0.00
+        account['value'] = 500.00
         account['debt'] = 0.00
         account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1}
         account['stonks'] = []
@@ -187,7 +188,7 @@ async def bitch(ctx, arg1 = 'show'):
 async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1'):
     if (arg1 == 'show' and arg2 == '-1' and arg3 == '-1'):
         embedVar = discord.Embed(title='BillionaireBot',
-                                description='Stonks on the market', color=0x00ff00)
+                                description='Stonks on the market (Graph currently does not automatically update)', color=0x00ff00)
         embedVar.set_thumbnail(url=BOT_IMAGE)
 
         allStonks = readStonksFromDb()
@@ -197,13 +198,13 @@ async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1'):
             stonkName = stonk['stonk']
             stonkValue = stonk['value']
             embedVar.add_field(name="[" + str(i) + "] " + stonkName,
-                            value="$" + str(stonkValue) + " ", inline=False)
+                            value="$" + "{:.2f}".format(stonkValue) + " ", inline=False)
             i += 1
 
         await ctx.channel.send(embed=embedVar)
         
         file = discord.File("demo.png")
-        e = discord.Embed()
+        e = discord.Embed(color=0x00ff00)
         e.set_image(url="attachment://demo.png")
         await ctx.send(file = file, embed=e)
     elif (arg1 == 'buy'):
@@ -225,20 +226,22 @@ async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1'):
 async def jobs(ctx, arg1 = 'show', arg2 = '-1'):
     if (arg1 == 'show' and arg2 == '-1'):
         embedVar = discord.Embed(title='BillionaireBot',
-                                description='Jobs on the market', color=0x00ff00)
+                                description='Jobs on the market(More jobs coming)', color=0x00ff00)
         embedVar.set_thumbnail(url=BOT_IMAGE)
 
         i = 1
         for job in allJobs:
+            if (i >= JOB_AVAILABILITY):
+                break
             jobName = job['name']
             jobRate = job['rate']
             embedVar.add_field(name="[" + str(i) + "] " + jobName,
-                            value="$" + str(jobRate) + " per hour", inline=False)
+                            value="$" + "{:.2f}".format(jobRate) + " per hour", inline=False)
             i += 1
 
         await ctx.channel.send(embed=embedVar)
     elif (arg1 == 'get' and arg2.isnumeric()):
-        await getAJob(ctx, arg2)
+        await getAJob(ctx, str(random.randint(0,JOB_AVAILABILITY)))
     else:
         embedVar = discord.Embed(title='Incorrect jobs command',
                              description='Use the following:\n\n!jobs\n\n!jobs get x(job #)', color=0x00ff00)
@@ -292,8 +295,8 @@ async def buyStonks(ctx, arg1, arg2):
         allStonks = json.load(file)
 
     if (arg1.isnumeric() and arg2.isnumeric()):
-        _stonk = int(arg1) - 1
-        if not(0 <= _stonk < len(allStonks)):
+        _stonkBuying = int(arg1) - 1
+        if not(0 <= _stonkBuying < len(allStonks)):
             return
 
     accounts = readAccountsFromDb()
@@ -302,17 +305,17 @@ async def buyStonks(ctx, arg1, arg2):
             account = _account
             break
     # enough money?
-    if (account['value'] >= allStonks[int(arg1)]['value'] * int(arg2)):
+    if (account['value'] >= allStonks[int(_stonkBuying)]['value'] * int(arg2)):
         # Loop through all your stonks
         haveStonk = False
         for _stonk in account['stonks']:
             # check to see if you already have stonk of it
-            if allStonks[int(arg1)]['stonk'] == _stonk['stonk']:
+            if allStonks[int(_stonkBuying)]['stonk'] == _stonk['stonk']:
                 haveStonk = True
                 # append x stonks to list of that
                 _stonk['own'].append(
                     {
-                        'priceBoughtAt': allStonks[int(arg1)]['value'],
+                        'priceBoughtAt': allStonks[int(_stonkBuying)]['value'],
                         'quantity': int(arg2)
                     }
                 )
@@ -321,22 +324,26 @@ async def buyStonks(ctx, arg1, arg2):
         if not(haveStonk):
             account['stonks'].append(
                 {
-                    'stonk': allStonks[int(arg1)]['stonk'],
+                    'stonk': allStonks[int(_stonkBuying)]['stonk'],
                     'own': [
                         {
-                            'priceBoughtAt': allStonks[int(arg1)]['value'],
+                            'priceBoughtAt': allStonks[int(_stonkBuying)]['value'],
                             'quantity': int(arg2)
                         }
                     ]
                 }
             )
         # Deduct moneys
-        account['value'] -= allStonks[int(arg1)]['value'] * int(arg2)
+        account['value'] -= allStonks[int(_stonkBuying)]['value'] * int(arg2)
         embedVar = displayProfile(account, ctx.message.author.avatar_url)
         writeToAccountDb(account)
 
         await ctx.channel.send(embed=embedVar)
-
+    else:
+        embedVar = discord.Embed(
+            title='Not enough funds', description="You can do a maximum of " + "{:.2f}".format(account['value']) + ' dollars', color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
+        return
 
 
 
@@ -348,8 +355,8 @@ async def sellStonks(ctx, arg1):
         allStonks = json.load(file)
 
     if (arg1.isnumeric()):
-        _stonk = int(arg1) - 1
-        if not(0 <= _stonk < len(allStonks)):
+        _stonkSell = int(arg1) - 1
+        if not(0 <= _stonkSell < len(allStonks)):
             return
 
     accounts = readAccountsFromDb()
@@ -361,19 +368,18 @@ async def sellStonks(ctx, arg1):
     # Loop through all your stonks
     for _stonk in account['stonks']:
         # check to see if you already have stonk of it
-        if allStonks[int(arg1)]['stonk'] == _stonk['stonk']:
+        if allStonks[_stonkSell]['stonk'] == _stonk['stonk']:
             for own in _stonk['own']:
-                account['value'] += ((own['priceBoughtAt'] - allStonks[int(arg1)]['value']) * -1 * own['quantity'])
-                embedVar = displayProfile(account, ctx.message.author.avatar_url)
-
+                account['value'] += (allStonks[int(_stonkSell)]['value'] * own['quantity'])
             account['stonks'].remove(_stonk) 
         
     writeToAccountDb(account)
+    embedVar = displayProfile(account, ctx.message.author.avatar_url)
     await ctx.channel.send(embed=embedVar)
 
 
 
-# sell stonks
+# gamble
 @bot.command(
     profile="gamble",
     brief="gamble"
@@ -386,7 +392,7 @@ async def gamble(ctx, arg1):
             break
     if (account['value'] < int(arg1)):
         embedVar = discord.Embed(
-            title='Not enough funds', description="You can do a maximum of " + str(account['value']) + ' dollars', color=0x00ff00)
+            title='Not enough funds', description="You can do a maximum of " + "{:.2f}".format(account['value']) + ' dollars', color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
         return
     
@@ -395,11 +401,11 @@ async def gamble(ctx, arg1):
     if (_coinFlip == 1):
         account['value'] += int(arg1)
         embedVar = discord.Embed(
-            title='Coin flip', description="You won " + str(arg1) + " dollars!", color=0x00ff00)
+            title='Coin flip', description="You won " + "{:.2f}".format(int(arg1)) + " dollars!", color=0x00ff00)
     else:
         account['value'] -= int(arg1)
         embedVar = discord.Embed(
-            title='Coin flip', description="You lost " + str(arg1) + " dollars!", color=0x00ff00)
+            title='Coin flip', description="You lost " + "{:.2f}".format(int(arg1)) + " dollars!", color=0x00ff00)
      
     writeToAccountDb(account)
 
@@ -410,16 +416,148 @@ async def gamble(ctx, arg1):
     await ctx.channel.send(embed=embedVar)
         
     
+# sell stonks
+@bot.command(
+    profile="leaderboard",
+    brief="leaderboard"
+)
+async def leaderboard(ctx):
+    leaderboard = []
+    accounts = readAccountsFromDb()
+    for _account in accounts:
+        leaderboard.append((_account['name'],_account['value']))
+    
+    leaderboard.sort(key = sortSecond, reverse = True)
+    
+    showLeaderBoard = ''
+    
+    for leader in leaderboard:
+        showLeaderBoard += str(leader[0]) + " with ${:.2f}".format(leader[1])+'\n'
+    
+    embedVar = discord.Embed(
+            title='Leaderboard', description=str(showLeaderBoard), color=0x00ff00)       
+    await ctx.channel.send(embed=embedVar)
 
 
+def sortSecond(val):
+    return val[1]
+
+
+# sell stonks
+@bot.command(
+    profile="leaderboard",
+    brief="leaderboard"
+)
+async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
+    '''
+        [
+            {"name": "BillionaireBot", "hour": "-1", "minute": "-1","second":"-1", "hand": [], "status":"lobby"},
+            {"name": "BigBoii", "wager": 100, "hand": []}
+        ]
+    '''
+    with open("blackJack.json", "r") as file:
+        blackJackSession = json.load(file)
+    if (arg1 == 'setup'):
+        if (blackJackSession[0]['status'] == 'inProgress'):
+            embedVar = discord.Embed(
+                title='Blackjack', description='There is a game already in progress\n\nYou must wait till the game is over', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        elif (blackJackSession[0]['status'] == 'lobby'):
+            embedVar = discord.Embed(
+                    title='Blackjack', description='There is already a lobby created.\n\n**To join use !blackjack join {wager}**', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        else (blackJackSession[0]['status'] == 'null'):
+            blackJackSession[0]['status'] = 'lobby' 
+            embedVar = discord.Embed(
+                    title='Blackjack', description='You just created a black jack lobby.\n\n**You and others may join using !blackjack join {wager}**\n\nTo start the game do !blackjack start', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+    elif (arg1 == 'join' and arg2.isnumeric() and int(arg2) > 0):
+        if (blackJackSession[0]['status'] == 'inProgress'):
+            embedVar = discord.Embed(
+                title='Blackjack', description='You cannot join a game in progress.\n\nYou must wait till the game is over', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        elif (blackJackSession[0]['status'] == 'lobby'):
+            ## ADD MY NAME AND WAGER TO BLACKJACK.JSON
+            embedVar = discord.Embed(
+                    title='Blackjack', description='You have joined the lobby!', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        else (blackJackSession[0]['status'] == 'null'):
+            embedVar = discord.Embed(
+                    title='Blackjack', description='There is no black jack lobby\n\n**To create a lobby do !blackjack setup**', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+    elif (arg1 == 'start'):
+        if (blackJackSession[0]['status'] == 'inProgress'):
+            embedVar = discord.Embed(
+                title='Blackjack', description='You cannot start a game in progress.\n\nYou must wait till the game is over', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        elif (blackJackSession[0]['status'] == 'lobby'):
+            ## PRINT WHO IS IN THE GAME
+            blackJackSession[0]['status'] = 'inProgress'
+            embedVar = discord.Embed(
+                    title='Blackjack', description='You have started the game!', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        else (blackJackSession[0]['status'] == 'null'):
+            embedVar = discord.Embed(
+                    title='Blackjack', description='You cannot start a game without a lobby\n\n**To create a lobby do !blackjack setup**', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+    elif (arg1 == 'hit'):
+        if (blackJackSession[0]['status'] == 'inProgress'):
+            ## CHECK TO SEE IF IM IN GAME
+            ## CHECK TO SEE MY STATUS ('alive', 'busted')
+            ## GRAB MY ACCOUNTS HAND
+            ## ADD RANDOM CARD
+            ## CHECK TO SEE IF > 21 BUST
+            ## ELSE ADD CARD TO HAND
+            embedVar = discord.Embed(
+                title='Blackjack', description='You cannot start a game in progress.\n\nYou must wait till the game is over', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        elif (blackJackSession[0]['status'] == 'lobby'):
+            embedVar = discord.Embed(
+                    title='Blackjack', description='The game is not yet started.', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        else (blackJackSession[0]['status'] == 'null'):
+            embedVar = discord.Embed(
+                    title='Blackjack', description='There is not a game created.', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+    elif (arg1 == 'stay'):
+        if (blackJackSession[0]['status'] == 'inProgress'):
+            ## CHECK TO SEE IF IM IN GAME
+            ## CHECK TO SEE MY STATUS ('alive', 'busted')
+            ## GRAB MY ACCOUNTS HAND
+            ## ADD RANDOM CARD
+            ## CHECK TO SEE IF > 21 BUST
+            ## ELSE ADD CARD TO HAND
+            embedVar = discord.Embed(
+                title='Blackjack', description='You cannot start a game in progress.\n\nYou must wait till the game is over', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        elif (blackJackSession[0]['status'] == 'lobby'):
+            embedVar = discord.Embed(
+                    title='Blackjack', description='The game is not yet started.', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        else (blackJackSession[0]['status'] == 'null'):
+            embedVar = discord.Embed(
+                    title='Blackjack', description='There is not a game created.', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+        
+    
 
 # Display Profile
 def displayProfile(account, author_avatar_url):
     embedVar = discord.Embed(title=account['name'], description=account['job']['jobTitle'] +
-                             " ( $" + str(account['job']['rate']) + " per/hour)", color=0x00ff00)
+                             " ( $" + "{:.2f}".format(account['job']['rate']) + " per/hour)", color=0x00ff00)
     embedVar.set_thumbnail(url=author_avatar_url)
     embedVar.add_field(name="Value", value="$" +
-                       str(account['value']), inline=False)
+                       "{:.2f}".format(account['value']), inline=False)
     #embedVar.add_field(name="Debt", value="$" + str(account['debt']), inline=False)
     embedVar.add_field(name="Bitch of the day", value=account['bitch']['name'] + " (" + str(
         account['bitch']['value']) + ")", inline=False)
@@ -428,10 +566,11 @@ def displayProfile(account, author_avatar_url):
     myStonks = ""
     for _stonk in account['stonks']:
         for _own in _stonk['own']:
-            myStonks += "  " + str(_own['quantity']) + " " + _stonk['stonk'] + " shares at $" + str(
-                str(_own['priceBoughtAt'])) + "\n"
-
-    embedVar.add_field(name="Stonks", value=myStonks, inline=False)
+            myStonks += "  " + str(_own['quantity']) + " " + _stonk['stonk'] + " shares at $" + "{:.2f}".format(_own['priceBoughtAt']) + "\n"
+    if (myStonks != ""):
+        embedVar.add_field(name="Stonks", value=myStonks, inline=False)
+    else:
+        embedVar.add_field(name="Stonks", value='You have no stonks.', inline=False)
     return embedVar
 
 

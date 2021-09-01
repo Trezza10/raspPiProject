@@ -23,7 +23,7 @@ ax.spines['bottom'].set_color('white')         #setting up above X-axis tick col
 ax.spines['right'].set_color('white')        # setting up Y-axis tick color to red
 ax.spines['top'].set_color('white')         #setting up above X-axis tick color to red
 
-ax.xaxis.set_major_locator(MultipleLocator(6))
+ax.xaxis.set_major_locator(MultipleLocator(3))
 ax.xaxis.set_major_formatter('{x:.0f}')
 
 # For the minor ticks, use no labels; default NullFormatter.

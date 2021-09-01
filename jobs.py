@@ -5,5 +5,5 @@ with open("/home/mike/Development/raspPiProject/accounts.json", "r") as file:
 
 with open("/home/mike/Development/raspPiProject/accounts.json", "w") as file:
     for account in accounts:
-        account['value'] += account['job']['rate']
+        account['value'] += int(account['job']['rate'])
     json.dump(accounts, file)
