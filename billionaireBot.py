@@ -468,7 +468,7 @@ async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
                     title='Blackjack', description='There is already a lobby created.\n\n**To join use !blackjack join {wager}**', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
             return
-        else (blackJackSession[0]['status'] == 'null'):
+        elif (blackJackSession[0]['status'] == 'null'):
             blackJackSession[0]['status'] = 'lobby' 
             embedVar = discord.Embed(
                     title='Blackjack', description='You just created a black jack lobby.\n\n**You and others may join using !blackjack join {wager}**\n\nTo start the game do !blackjack start', color=0x00ff00)
@@ -485,7 +485,7 @@ async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
                     title='Blackjack', description='You have joined the lobby!', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
             return
-        else (blackJackSession[0]['status'] == 'null'):
+        elif (blackJackSession[0]['status'] == 'null'):
             embedVar = discord.Embed(
                     title='Blackjack', description='There is no black jack lobby\n\n**To create a lobby do !blackjack setup**', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
@@ -502,7 +502,7 @@ async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
                     title='Blackjack', description='You have started the game!', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
             return
-        else (blackJackSession[0]['status'] == 'null'):
+        elif (blackJackSession[0]['status'] == 'null'):
             embedVar = discord.Embed(
                     title='Blackjack', description='You cannot start a game without a lobby\n\n**To create a lobby do !blackjack setup**', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
@@ -523,7 +523,7 @@ async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
                     title='Blackjack', description='The game is not yet started.', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
             return
-        else (blackJackSession[0]['status'] == 'null'):
+        elif (blackJackSession[0]['status'] == 'null'):
             embedVar = discord.Embed(
                     title='Blackjack', description='There is not a game created.', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
@@ -544,7 +544,7 @@ async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
                     title='Blackjack', description='The game is not yet started.', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
             return
-        else (blackJackSession[0]['status'] == 'null'):
+        elif (blackJackSession[0]['status'] == 'null'):
             embedVar = discord.Embed(
                     title='Blackjack', description='There is not a game created.', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)

@@ -4,14 +4,14 @@ import math
 import numpy as np
 
 
-with open("/home/mike/Development/raspPiProject/stonks.json", "r") as file:
+with open("stonks.json", "r") as file:
     stonks = json.load(file)
 
-with open("/home/mike/Development/raspPiProject/stonks.json", "w") as file:
+with open("stonks.json", "w") as file:
     for stonk in stonks:
-        daily_vol = random.uniform(0.01, 0.04)
+        daily_vol = random.uniform(stonk['dailyVolatility'][0], stonk['dailyVolatility'][1])
         lastVal = stonk['value']
-        newVal = round(lastVal * (1 + np.random.normal(0, daily_vol)), 2)
+        newVal = round(lastVal * (1 + np.random.normal(stonk['influence'], daily_vol)), 2)
         stonk['value'] = newVal
         stonk['history'].append(newVal)
         print("${:.2f}".format(stonk['value']))
