@@ -1,8 +1,10 @@
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator)
 import json
-
-with open("stonks.json", "r") as file:
+import os
+with open(os.path.dirname(os.path.realpath(__file__))+"/stonks.json", "r") as file:
     allStonks = json.load(file)
 
 fig = plt.figure()
@@ -43,5 +45,5 @@ plt.legend(names, loc ="lower right")
 
 var = 'test'
 plt.xlim([graphLen - 6*4, graphLen + 10])
-plt.savefig('demo.png', transparent=True)
+plt.savefig(os.path.dirname(os.path.realpath(__file__))+'/demo.png', transparent=True)
 #plt.show()

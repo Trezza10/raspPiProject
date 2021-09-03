@@ -444,17 +444,12 @@ def sortSecond(val):
 
 
 # sell stonks
+'''
 @bot.command(
     profile="leaderboard",
     brief="leaderboard"
 )
 async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
-    '''
-        [
-            {"name": "BillionaireBot", "hour": "-1", "minute": "-1","second":"-1", "hand": [], "status":"lobby"},
-            {"name": "BigBoii", "wager": 100, "hand": []}
-        ]
-    '''
     with open("blackJack.json", "r") as file:
         blackJackSession = json.load(file)
     if (arg1 == 'setup'):
@@ -514,6 +509,7 @@ async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
             ## ADD RANDOM CARD
             ## CHECK TO SEE IF > 21 BUST
             ## ELSE ADD CARD TO HAND
+            ## CHECK TO SEE 
             embedVar = discord.Embed(
                 title='Blackjack', description='You cannot start a game in progress.\n\nYou must wait till the game is over', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
@@ -549,7 +545,7 @@ async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
                     title='Blackjack', description='There is not a game created.', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
         
-    
+ '''   
 
 # Display Profile
 def displayProfile(account, author_avatar_url):
