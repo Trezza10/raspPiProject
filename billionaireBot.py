@@ -48,11 +48,11 @@ token = file.read()
 file.close()
 
 
-with open("bitches.json", "r") as file:
+with open("data/bitches.json", "r") as file:
     allBitches = json.load(file)
 
 
-with open("jobs.json", "r") as file:
+with open("data/jobs.json", "r") as file:
     allJobs = json.load(file)
 
 # Creates bot with the prefix of !
@@ -86,7 +86,7 @@ async def intro(ctx):
 )
 async def cheat(ctx):
 
-    with open("accounts.json", "r") as file:
+    with open("data/accounts.json", "r") as file:
         accounts = json.load(file)
 
     for account in accounts:
@@ -105,7 +105,7 @@ async def cheat(ctx):
 )
 async def createAccount(ctx):
 
-    with open("accounts.json", "r") as file:
+    with open("data/accounts.json", "r") as file:
         accounts = json.load(file)
 
     name = ctx.message.author.name
@@ -188,8 +188,7 @@ async def bitch(ctx, arg1 = 'show'):
 async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1'):
     if (arg1 == 'show' and arg2 == '-1' and arg3 == '-1'):
         embedVar = discord.Embed(title='BillionaireBot',
-                                description='Stonks on the market (Graph currently does not automatically update)', color=0x00ff00)
-        embedVar.set_thumbnail(url=BOT_IMAGE)
+                                description='Stonks on the market. (Updated every 15 minutes)', color=0x00ff00)
 
         allStonks = readStonksFromDb()
 
@@ -200,13 +199,10 @@ async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1'):
             embedVar.add_field(name="[" + str(i) + "] " + stonkName,
                             value="$" + "{:.2f}".format(stonkValue) + " ", inline=False)
             i += 1
-
-        await ctx.channel.send(embed=embedVar)
         
-        file = discord.File("demo.png")
-        e = discord.Embed(color=0x00ff00)
-        e.set_image(url="attachment://demo.png")
-        await ctx.send(file = file, embed=e)
+        file = discord.File("stonksCharts.png")
+        embedVar.set_image(url="attachment://stonksCharts.png")
+        await ctx.send(file = file, embed=embedVar)
     elif (arg1 == 'buy'):
         if (arg2.isnumeric() and arg3.isnumeric()):
             await buyStonks(ctx, arg2, arg3)
@@ -223,8 +219,8 @@ async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1'):
     profile="Jobs",
     brief="Jobs"
 )
-async def jobs(ctx, arg1 = 'show', arg2 = '-1'):
-    if (arg1 == 'show' and arg2 == '-1'):
+async def jobs(ctx, arg1 = 'show'):
+    if (arg1 == 'show'):
         embedVar = discord.Embed(title='BillionaireBot',
                                 description='Jobs on the market(More jobs coming)', color=0x00ff00)
         embedVar.set_thumbnail(url=BOT_IMAGE)
@@ -240,11 +236,11 @@ async def jobs(ctx, arg1 = 'show', arg2 = '-1'):
             i += 1
 
         await ctx.channel.send(embed=embedVar)
-    elif (arg1 == 'get' and arg2.isnumeric()):
+    elif (arg1 == 'get'):
         await getAJob(ctx, str(random.randint(0,JOB_AVAILABILITY)))
     else:
         embedVar = discord.Embed(title='Incorrect jobs command',
-                             description='Use the following:\n\n!jobs\n\n!jobs get x(job #)', color=0x00ff00)
+                             description='Use the following:\n\n!jobs\n\n!jobs get', color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
 
 
@@ -261,8 +257,17 @@ async def getAJob(ctx, args):
             account = _account
             break
 
-    account['job']['jobTitle'] = allJobs[job]['name']
-    account['job']['rate'] = allJobs[job]['rate']
+    today = int(datetime.datetime.now().day)
+    
+    if (account['job']['date'] < today):
+        account['job']['jobTitle'] = allJobs[job]['name']
+        account['job']['rate'] = allJobs[job]['rate']
+        account['job']['date'] = today
+    else:
+        embedVar = discord.Embed(
+                title='Lazy ass bum', description="You gonna have to **WORK** for your job before you get a new one.\n\nYou must wait till tomorrow to get a new job.", color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
+        return
 
     embedVar = displayProfile(account, ctx.message.author.avatar_url)
     writeToAccountDb(account)
@@ -287,11 +292,12 @@ async def profile(ctx):
     await ctx.channel.send(embed=embedVar)
 
 
+
 # Buy/sell stonks
 async def buyStonks(ctx, arg1, arg2):
     print(arg1, arg2)
 
-    with open("stonks.json", "r") as file:
+    with open("data/stonks.json", "r") as file:
         allStonks = json.load(file)
 
     if (arg1.isnumeric() and arg2.isnumeric()):
@@ -351,7 +357,7 @@ async def buyStonks(ctx, arg1, arg2):
 async def sellStonks(ctx, arg1):
     print(arg1)
 
-    with open("stonks.json", "r") as file:
+    with open("data/stonks.json", "r") as file:
         allStonks = json.load(file)
 
     if (arg1.isnumeric()):
@@ -423,19 +429,37 @@ async def gamble(ctx, arg1):
 )
 async def leaderboard(ctx):
     leaderboard = []
+    
+    with open("data/stonks.json", "r") as file:
+        liveStonks = json.load(file)
+
     accounts = readAccountsFromDb()
     for _account in accounts:
-        leaderboard.append((_account['name'],_account['value']))
+
+        assetValue = 0
+
+        myStonks = ""
+
+        for _stonk in _account['stonks']:
+            for liveStonk in liveStonks:
+                if liveStonk['stonk'] == _stonk['stonk']:
+                    haveStonk = liveStonk
+
+            for _own in _stonk['own']:
+                myStonks += "  " + str(_own['quantity']) + " " + _stonk['stonk'] + " shares at $" + "{:.2f}".format(_own['priceBoughtAt']) + "\n"
+                assetValue += float(_own['quantity']) * float(haveStonk['value'])
+        netWorth = float(assetValue) + float(_account['value'])
+        leaderboard.append((_account['name'], netWorth ))
     
     leaderboard.sort(key = sortSecond, reverse = True)
     
     showLeaderBoard = ''
     
     for leader in leaderboard:
-        showLeaderBoard += str(leader[0]) + " with ${:.2f}".format(leader[1])+'\n'
+        showLeaderBoard += str(leader[0]) + " : ${:.2f}".format(leader[1])+'\n'
     
     embedVar = discord.Embed(
-            title='Leaderboard', description=str(showLeaderBoard), color=0x00ff00)       
+            title='Leaderboard', description="**Net Worth**\n\n" +str(showLeaderBoard), color=0x00ff00)       
     await ctx.channel.send(embed=embedVar)
 
 
@@ -450,7 +474,7 @@ def sortSecond(val):
     brief="leaderboard"
 )
 async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
-    with open("blackJack.json", "r") as file:
+    with open("data/blackJack.json", "r") as file:
         blackJackSession = json.load(file)
     if (arg1 == 'setup'):
         if (blackJackSession[0]['status'] == 'inProgress'):
@@ -549,43 +573,56 @@ async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
 
 # Display Profile
 def displayProfile(account, author_avatar_url):
+    
+    with open("data/stonks.json", "r") as file:
+        liveStonks = json.load(file)
+
     embedVar = discord.Embed(title=account['name'], description=account['job']['jobTitle'] +
                              " ( $" + "{:.2f}".format(account['job']['rate']) + " per/hour)", color=0x00ff00)
     embedVar.set_thumbnail(url=author_avatar_url)
-    embedVar.add_field(name="Value", value="$" +
+    embedVar.add_field(name="Bank", value="$" +
                        "{:.2f}".format(account['value']), inline=False)
-    #embedVar.add_field(name="Debt", value="$" + str(account['debt']), inline=False)
     embedVar.add_field(name="Bitch of the day", value=account['bitch']['name'] + " (" + str(
         account['bitch']['value']) + ")", inline=False)
     
-    
+    assetValue = 0
+
     myStonks = ""
+
     for _stonk in account['stonks']:
+        for liveStonk in liveStonks:
+            if liveStonk['stonk'] == _stonk['stonk']:
+                haveStonk = liveStonk
+
         for _own in _stonk['own']:
             myStonks += "  " + str(_own['quantity']) + " " + _stonk['stonk'] + " shares at $" + "{:.2f}".format(_own['priceBoughtAt']) + "\n"
+            assetValue += float(_own['quantity']) * float(haveStonk['value'])
+
     if (myStonks != ""):
+        embedVar.add_field(name="Asset Value", value="${:.2f}".format(assetValue), inline=False)
         embedVar.add_field(name="Stonks", value=myStonks, inline=False)
     else:
         embedVar.add_field(name="Stonks", value='You have no stonks.', inline=False)
     return embedVar
 
 
+
 # Read Accounts
 def readAccountsFromDb():
-    with open("accounts.json", "r") as file:
+    with open("data/accounts.json", "r") as file:
         accounts = json.load(file)
     return accounts
 
 # Read Stonks
 def readStonksFromDb():
-    with open("stonks.json", "r") as file:
+    with open("data/stonks.json", "r") as file:
         allStonks = json.load(file)
     return allStonks
 
 
 # Write to Account Database
 def writeToAccountDb(accountToWrite):
-    with open("accounts.json", "r") as file:
+    with open("data/accounts.json", "r") as file:
         accounts = json.load(file)
 
     name = accountToWrite['name']
@@ -594,13 +631,12 @@ def writeToAccountDb(accountToWrite):
         if (account['name'] == name):
             index = accounts.index(account)
 
-    with open("accounts.json", "w") as file:
+    if (index != -1):
+        accounts[index] = accountToWrite
+    else:
+        accounts.append(accountToWrite)
 
-        if (index != -1):
-            accounts[index] = accountToWrite
-        else:
-            accounts.append(accountToWrite)
-
+    with open("data/accounts.json", "w") as file:
         json.dump(accounts, file)
 
 
