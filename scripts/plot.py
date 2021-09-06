@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator)
 import json
 import os
-with open(os.path.dirname(os.path.realpath(__file__))+"../data/stonks.json", "r") as file:
+with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/stonks.json", "r") as file:
     allStonks = json.load(file)
 
 fig = plt.figure()
@@ -44,5 +44,5 @@ for stonk in allStonks:
 plt.legend(names, loc ="lower right")
 
 plt.xlim([graphLen - 6*4, graphLen + 10])
-plt.savefig(os.path.dirname(os.path.realpath(__file__))+'/../stonksCharts.png', transparent=True)
+plt.savefig(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+'/stonksCharts.png', transparent=True)
 #plt.show()

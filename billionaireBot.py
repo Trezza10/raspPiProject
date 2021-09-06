@@ -117,7 +117,7 @@ async def createAccount(ctx):
     if (index == -1):
         account = {}
         account['name'] = ctx.message.author.name
-        account['job'] = {'jobTitle': 'Jobless', 'rate': 0}
+        account['job'] = {'jobTitle': 'Jobless', 'rate': 0, 'date': -1}
         account['value'] = 500.00
         account['debt'] = 0.00
         account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1}
@@ -248,7 +248,7 @@ async def jobs(ctx, arg1 = 'show'):
 async def getAJob(ctx, args):
     if (args.isnumeric()):
         job = int(args) - 1
-        if not(0 <= job < len(allJobs)):
+        if not(0 <= job < len(allJobs) - 1):
             return
 
     accounts = readAccountsFromDb()

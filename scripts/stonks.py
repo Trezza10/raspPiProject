@@ -2,9 +2,9 @@ import json
 import random
 import math
 import numpy as np
+import os
 
-
-with open("../data/stonks.json", "r") as file:
+with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/stonks.json", "r") as file:
     stonks = json.load(file)
 
 for stonk in stonks:
@@ -17,5 +17,5 @@ for stonk in stonks:
     if stonk['value'] <= 0:
         stonk['value'] = 10
         
-with open("../data/stonks.json", "w") as file:
+with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/stonks.json", "w") as file:
     json.dump(stonks, file)
