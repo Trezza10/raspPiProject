@@ -120,7 +120,7 @@ async def createAccount(ctx):
         account['job'] = {'jobTitle': 'Jobless', 'rate': 0, 'date': -1}
         account['value'] = 500.00
         account['debt'] = 0.00
-        account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1}
+        account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1, 'trait': 'None', 'balance': 0}
         account['stonks'] = []
 
         # Create embed message display
@@ -140,7 +140,7 @@ async def createAccount(ctx):
     profile="Find your bad bitch TODAY",
     brief="Find your bad bitch TODAY"
 )
-async def bitch(ctx, arg1 = 'show'):
+async def bitch(ctx, arg1 = 'show', arg2 = -1):
     if (arg1 == 'get'):
         today = int(datetime.datetime.now().day)
         accounts = readAccountsFromDb()
@@ -149,13 +149,30 @@ async def bitch(ctx, arg1 = 'show'):
                 account = _account
                 break
         if (account['bitch']['date'] < today):
+            assetValue = 0
+
+            with open("data/stonks.json", "r") as file:
+                liveStonks = json.load(file)
+
+            for _stonk in _account['stonks']:
+                for liveStonk in liveStonks:
+                    if liveStonk['stonk'] == _stonk['stonk']:
+                        haveStonk = liveStonk
+
+                for _own in _stonk['own']:
+                    assetValue += float(_own['quantity']) * float(haveStonk['value'])
+                
+            netWorth = float(assetValue) + float(_account['value'])
+
             randomBitch = allBitches[random.randint(0, len(allBitches)-1)]
             randomBitchValue = random.randint(0, 100)
             account['bitch']['name'] = randomBitch
             account['bitch']['value'] = randomBitchValue
             account['bitch']['date'] = today
+            account['bitch']['trait'] = random.choice(['gamble', 'jobs']) #, 'OWO', 'HUH', 'YEP', 'DOG'])
+            account['bitch']['balance'] = netWorth * (randomBitchValue/100) * 0.2 # NETWORTH * BITCHES VALUE/100 * .2 PER DAY
             currentNetWorth = account['value']
-            account['value'] = await bitchesValue(randomBitchValue, currentNetWorth, ctx)
+            account['value'] = await bitchesValue(randomBitchValue, currentNetWorth, account['bitch'], ctx)
             embedVar = displayProfile(account, ctx.message.author.avatar_url)
             writeToAccountDb(account)
 
@@ -172,12 +189,59 @@ async def bitch(ctx, arg1 = 'show'):
                 account = _account
                 break
         embedVar = discord.Embed(
-                title=account['bitch']['name'], description=str(account['bitch']['name']) + ' is yo bitch for now.\n\nYour anniversary is September ' + str(account['bitch']['date']) +'.\n\nShe is ' + str(account['bitch']['value']) + ' value.', color=0x00ff00)
+                title=account['bitch']['name'], description=str(account['bitch']['name']) + ' is yo bitch for now.\n\nYour anniversary is September ' + str(account['bitch']['date']) +'.\n\nShe is ' + str(account['bitch']['value']) + ' value.\n\nShe wants $' + "{:.2f}".format(account['bitch']['balance']) + ' or she will leave yo ass.', color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
     else:
         embedVar = discord.Embed(title='Incorrect bitches command',
                              description='Use the following:\n\n!bitch show\n\n!bitch get', color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
+    '''elif (arg1 == 'give'):
+        accounts = readAccountsFromDb()
+
+        for _account in accounts:
+            if _account['name'] == ctx.message.author.name:
+                account = _account
+                break
+        
+        if ((str(arg2).isnumeric() and account['value'] < int(arg2)) or (arg2 == 'all' and account['value'] < account['bitch']['balance'])):
+            embedVar = discord.Embed(
+                title='Not enough funds', description="You can pay her a maximum of " + "{:.2f}".format(account['value']) + ' dollars', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        if (account['bitch']['name'] == 'Nobody'):
+            embedVar = discord.Embed(
+                title='You aint got bitches', description="You aint got bitches to give nothing to my guy. Either go get a bitch or go listen to Drake on spotify.", color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+
+        if (account['bitch']['balance'] <= 0):
+            embedVar = discord.Embed(
+                title='Boiiii whatchu doing', description="You aint supposed to OVER pay yo bitch.\n\n\n\nThe hell is wrong with you.....", color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+            return
+        
+        if (arg2 == 'all'):
+            account['value'] -= account['bitch']['balance']
+            account['bitch']['balance'] -= 0
+            account['bitch']['value'] += 5
+            embedVar = discord.Embed(
+                    title='Payment Accepted', description=str(account['bitch']['name']) + ' is quite happy now. She now might reconsider leaving your broke ass for someone else.', color=0x00ff00)
+            await ctx.channel.send(embed=embedVar)
+        else:
+            account['value'] -= int(arg2)
+            account['bitch']['balance'] -= int(arg2)
+            if (account['bitch']['balance'] <= 0):
+                account['bitch']['value'] += 5
+                embedVar = discord.Embed(
+                    title='Payment Accepted', description=str(account['bitch']['name']) + ' is quite happy now. She now might reconsider leaving your broke ass for someone else.', color=0x00ff00)
+                await ctx.channel.send(embed=embedVar)
+            else:
+                embedVar = discord.Embed(
+                    title='Payment Accepted', description=str(account['bitch']['name']) + ' accepts the jesture... but still wants $' + "{:.2f}".format(account['bitch']['balance']) + ' dollars', color=0x00ff00)
+                await ctx.channel.send(embed=embedVar)
+        
+        writeToAccountDb(account)'''
+    
         
 
 # The stonks boi
@@ -641,7 +705,24 @@ def writeToAccountDb(accountToWrite):
 
 
 # Caculating the bitches value
-async def bitchesValue(value, currentNetWorth, ctx):
+async def bitchesValue(value, currentNetWorth, bitch, ctx):
+    '''
+        Bitch's traits:
+            - gamble
+            - jobs
+    '''
+    print(bitch['name'])
+    '''name = bitch['name']
+    
+    if (bitch['trait'] == 'gamble'):
+        description = ''
+    elif (bitch['trait'] == 'jobs'):
+        description = ''
+    '''
+    
+
+
+
     if (value == 0):
         embedVar = discord.Embed(
             title='STINKY BITCH', description="UH OH YOU GOT STINKY BITCH. SHE IS ONLY DATING YOU FOR YOUR MONEY. SHE WANTS A DIVORCE ALREADY.\n\n**1/2X NET WORTH**", color=0x00ff00)
