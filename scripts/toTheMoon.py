@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import json
 import random
 import numpy as np
@@ -36,7 +37,7 @@ with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/st
 async def on_ready():
     channel = client.get_channel(882939847998861362) #879488994960883723  #882939847998861362
     j = 0
-    SLEEP = 20
+    SLEEP = 60
 
     stonksName = ['OWO', 'HUH', 'YEP', 'DOG']
     randomStonk = random.choice([0,1,2,3])
