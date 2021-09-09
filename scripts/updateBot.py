@@ -59,15 +59,32 @@ async def on_ready():
     with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/accounts.json", "r") as file:
         allAccounts = json.load(file)
 
+    dailyReport += '\n'
+
     for account in allAccounts:
-        account['job']['date'] = -1
-        account['job']['jobTitle'] = "Jobless"
-        account['job']['rate'] = 0
+        if ('keep_job' not in account['bitch']['traits']):
+            account['job']['date'] = -1
+            account['job']['jobTitle'] = "Jobless"
+            account['job']['rate'] = 0
+        if (account['bitch']['name'] != 'Nobody' and account['bitch']['balance'] > 0):
+            excuses = [
+                'bc you were too cheap.', 
+                'bc you did not treat her right.', 
+                'bc you did not spend enough time with her.', 
+                'bc she met another man.',
+                'bc she thought you were too broke for her.',
+                'bc she did not like yo ass.'
+            ]
+            dailyReport += '\n-**' + account['name'] + '** lost your bitch, ' + account['bitch']['name'] + excuses[random.randint(0,5)]
+            account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1, 'traits': [], 'balance': 0}
+            
+
+    dailyReport += "\n\n...... Aaaandddd you lost your job."
 
     with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/accounts.json", "w") as file:
         json.dump(allAccounts, file)
     
-    dailyReport += "\n\n...... Aaaandddd you lost your job."
+    
     embedVar = discord.Embed(
             title='Daily Reports: '+ date, description=dailyReport, color=0x00ff00)
     await channel.send(embed=embedVar)

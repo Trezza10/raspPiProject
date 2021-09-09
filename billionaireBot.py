@@ -42,6 +42,7 @@ Things to do to become a billionaire
 channelId = 633465922786689024 #864619752991096833
 BOT_IMAGE = 'https://www.media3.hw-static.com/wp-content/uploads/xx_55026731-638x425-638x425.jpeg'
 JOB_AVAILABILITY = 10
+TICKET_PRICE = 100
 
 file = open('./../token.txt')
 token = file.read()
@@ -120,7 +121,7 @@ async def createAccount(ctx):
         account['job'] = {'jobTitle': 'Jobless', 'rate': 0, 'date': -1}
         account['value'] = 500.00
         account['debt'] = 0.00
-        account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1, 'trait': 'None', 'balance': 0}
+        account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1, 'trait': [], 'balance': 0}
         account['stonks'] = []
 
         # Create embed message display
@@ -169,7 +170,7 @@ async def bitch(ctx, arg1 = 'show', arg2 = -1):
             account['bitch']['name'] = randomBitch
             account['bitch']['value'] = randomBitchValue
             account['bitch']['date'] = today
-            account['bitch']['trait'] = random.choice(['gamble', 'jobs']) #, 'OWO', 'HUH', 'YEP', 'DOG'])
+            account['bitch']['traits'] = [] #, 'OWO', 'HUH', 'YEP', 'DOG'])
             account['bitch']['balance'] = netWorth * (randomBitchValue/100) * 0.2 # NETWORTH * BITCHES VALUE/100 * .2 PER DAY
             currentNetWorth = account['value']
             account['value'] = await bitchesValue(randomBitchValue, currentNetWorth, account['bitch'], ctx)
@@ -188,14 +189,20 @@ async def bitch(ctx, arg1 = 'show', arg2 = -1):
             if _account['name'] == ctx.message.author.name:
                 account = _account
                 break
+        
+        bitchTraits = ''
+        for _traits in account['bitch']['traits']:
+            bitchTraits += '\n - ' + _traits + ''
         embedVar = discord.Embed(
-                title=account['bitch']['name'], description=str(account['bitch']['name']) + ' is yo bitch for now.\n\nYour anniversary is September ' + str(account['bitch']['date']) +'.\n\nShe is ' + str(account['bitch']['value']) + ' value.\n\nShe wants $' + "{:.2f}".format(account['bitch']['balance']) + ' or she will leave yo ass.', color=0x00ff00)
+                title=account['bitch']['name'], description='', color=0x00ff00)
+        
+        embedVar.add_field(name="Value", value=str(account['bitch']['value']), inline=False)
+        embedVar.add_field(name="Anniversary", value='September '+ str(account['bitch']['date']), inline=False)
+        embedVar.add_field(name="Traits", value=bitchTraits, inline=False)
+        embedVar.add_field(name="Balance", value='Needs $' + "{:,.2f}".format(account['bitch']['balance']) + ' or she will leave you', inline=False)
+        
         await ctx.channel.send(embed=embedVar)
-    else:
-        embedVar = discord.Embed(title='Incorrect bitches command',
-                             description='Use the following:\n\n!bitch show\n\n!bitch get', color=0x00ff00)
-        await ctx.channel.send(embed=embedVar)
-    '''elif (arg1 == 'give'):
+    elif (arg1 == 'give'):
         accounts = readAccountsFromDb()
 
         for _account in accounts:
@@ -205,7 +212,7 @@ async def bitch(ctx, arg1 = 'show', arg2 = -1):
         
         if ((str(arg2).isnumeric() and account['value'] < int(arg2)) or (arg2 == 'all' and account['value'] < account['bitch']['balance'])):
             embedVar = discord.Embed(
-                title='Not enough funds', description="You can pay her a maximum of " + "{:.2f}".format(account['value']) + ' dollars', color=0x00ff00)
+                title='Not enough funds', description="You can pay her a maximum of " + "{:,.2f}".format(account['value']) + ' dollars', color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
             return
         if (account['bitch']['name'] == 'Nobody'):
@@ -237,10 +244,14 @@ async def bitch(ctx, arg1 = 'show', arg2 = -1):
                 await ctx.channel.send(embed=embedVar)
             else:
                 embedVar = discord.Embed(
-                    title='Payment Accepted', description=str(account['bitch']['name']) + ' accepts the jesture... but still wants $' + "{:.2f}".format(account['bitch']['balance']) + ' dollars', color=0x00ff00)
+                    title='Payment Accepted', description=str(account['bitch']['name']) + ' accepts the jesture... but still wants $' + "{:,.2f}".format(account['bitch']['balance']) + ' dollars', color=0x00ff00)
                 await ctx.channel.send(embed=embedVar)
         
-        writeToAccountDb(account)'''
+        writeToAccountDb(account)
+    else:
+        embedVar = discord.Embed(title='Incorrect bitches command',
+            description='Use the following:\n\n!bitch show\n\n!bitch get\n\n!bitch give \{money\}', color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
     
         
 
@@ -261,14 +272,14 @@ async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1'):
             stonkName = stonk['stonk']
             stonkValue = stonk['value']
             embedVar.add_field(name="[" + str(i) + "] " + stonkName,
-                            value="$" + "{:.2f}".format(stonkValue) + " ", inline=False)
+                            value="$" + "{:,.2f}".format(stonkValue) + " ", inline=False)
             i += 1
         
         file = discord.File("stonksCharts.png")
         embedVar.set_image(url="attachment://stonksCharts.png")
         await ctx.send(file = file, embed=embedVar)
     elif (arg1 == 'buy'):
-        if (arg2.isnumeric() and arg3.isnumeric()):
+        if (arg2.isnumeric() and (arg3.isnumeric() or arg3 == 'max')):
             await buyStonks(ctx, arg2, arg3)
     elif (arg1 == 'sell'):
         if (arg2.isnumeric()):
@@ -291,12 +302,12 @@ async def jobs(ctx, arg1 = 'show'):
 
         i = 1
         for job in allJobs:
-            if (i >= JOB_AVAILABILITY):
+            if (i >= JOB_AVAILABILITY + 1):
                 break
             jobName = job['name']
             jobRate = job['rate']
             embedVar.add_field(name="[" + str(i) + "] " + jobName,
-                            value="$" + "{:.2f}".format(jobRate) + " per hour", inline=False)
+                            value="$" + "{:,.2f}".format(jobRate) + " per hour", inline=False)
             i += 1
 
         await ctx.channel.send(embed=embedVar)
@@ -324,9 +335,14 @@ async def getAJob(ctx, args):
     today = int(datetime.datetime.now().day)
     
     if (account['job']['date'] < today):
-        account['job']['jobTitle'] = allJobs[job]['name']
-        account['job']['rate'] = allJobs[job]['rate']
-        account['job']['date'] = today
+        if ('best_job' in account['bitch']['traits']):
+            account['job']['jobTitle'] = allJobs[JOB_AVAILABILITY - 1]['name']
+            account['job']['rate'] = allJobs[JOB_AVAILABILITY - 1]['rate']
+            account['job']['date'] = today
+        else:
+            account['job']['jobTitle'] = allJobs[job]['name']
+            account['job']['rate'] = allJobs[job]['rate']
+            account['job']['date'] = today
     else:
         embedVar = discord.Embed(
                 title='Lazy ass bum', description="You gonna have to **WORK** for your job before you get a new one.\n\nYou must wait till tomorrow to get a new job.", color=0x00ff00)
@@ -364,7 +380,7 @@ async def buyStonks(ctx, arg1, arg2):
     with open("data/stonks.json", "r") as file:
         allStonks = json.load(file)
 
-    if (arg1.isnumeric() and arg2.isnumeric()):
+    if (arg1.isnumeric()):
         _stonkBuying = int(arg1) - 1
         if not(0 <= _stonkBuying < len(allStonks)):
             return
@@ -374,8 +390,43 @@ async def buyStonks(ctx, arg1, arg2):
         if _account['name'] == ctx.message.author.name:
             account = _account
             break
+
     # enough money?
-    if (account['value'] >= allStonks[int(_stonkBuying)]['value'] * int(arg2)):
+    if (arg2 == 'max' and account['value'] >= allStonks[int(_stonkBuying)]['value']):
+        # Loop through all your stonks
+        haveStonk = False
+        for _stonk in account['stonks']:
+            # check to see if you already have stonk of it
+            if allStonks[int(_stonkBuying)]['stonk'] == _stonk['stonk']:
+                haveStonk = True
+                # append x stonks to list of that
+                _stonk['own'].append(
+                    {
+                        'priceBoughtAt': allStonks[int(_stonkBuying)]['value'],
+                        'quantity': int(account['value']/allStonks[int(_stonkBuying)]['value'])
+                    }
+                )
+                print(_stonk)
+
+        if not(haveStonk):
+            account['stonks'].append(
+                {
+                    'stonk': allStonks[int(_stonkBuying)]['stonk'],
+                    'own': [
+                        {
+                            'priceBoughtAt': allStonks[int(_stonkBuying)]['value'],
+                            'quantity': int(account['value']/allStonks[int(_stonkBuying)]['value'])
+                        }
+                    ]
+                }
+            )
+        # Deduct moneys
+        account['value'] -= int(account['value'] / allStonks[int(_stonkBuying)]['value']) * allStonks[int(_stonkBuying)]['value']
+        embedVar = displayProfile(account, ctx.message.author.avatar_url)
+        writeToAccountDb(account)
+
+        await ctx.channel.send(embed=embedVar)
+    elif (arg2 != 'max' and account['value'] >= allStonks[int(_stonkBuying)]['value'] * int(arg2)):
         # Loop through all your stonks
         haveStonk = False
         for _stonk in account['stonks']:
@@ -411,7 +462,7 @@ async def buyStonks(ctx, arg1, arg2):
         await ctx.channel.send(embed=embedVar)
     else:
         embedVar = discord.Embed(
-            title='Not enough funds', description="You can do a maximum of " + "{:.2f}".format(account['value']) + ' dollars', color=0x00ff00)
+            title='Not enough funds', description="You can do a maximum of " + str(int(account['value']/allStonks[int(_stonkBuying)]['value'])) + ' shares of ' + allStonks[int(_stonkBuying)]['stonk'] + ' for $' + "{:,.2f}".format(int(account['value'] / allStonks[int(_stonkBuying)]['value']) * allStonks[int(_stonkBuying)]['value']), color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
         return
 
@@ -462,31 +513,124 @@ async def gamble(ctx, arg1):
             break
     if (account['value'] < int(arg1)):
         embedVar = discord.Embed(
-            title='Not enough funds', description="You can do a maximum of " + "{:.2f}".format(account['value']) + ' dollars', color=0x00ff00)
+            title='Not enough funds', description="You can do a maximum of " + "{:,.2f}".format(account['value']) + ' dollars', color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
         return
-    
-    _coinFlip = random.randint(0,1)
-    
-    if (_coinFlip == 1):
-        account['value'] += int(arg1)
+    if (int(arg1) < 0):
         embedVar = discord.Embed(
-            title='Coin flip', description="You won " + "{:.2f}".format(int(arg1)) + " dollars!", color=0x00ff00)
+            title='Invalid bet', description="You must bet a minimum of $1.00 dollar", color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)
+        return
+
+    bonusChance = 0
+    
+    if 'card_count' in account['bitch']['traits']:
+        bonusChance = int(account['bitch']['value'] / 5)
+
+    _coinFlip = random.randint(0,100) + bonusChance
+    
+    if (_coinFlip > 50):
+        bonusValue = 0
+        bonusDescription = ''
+        if 'slight_of_hand' in account['bitch']['traits']:
+            print('SLIGHT OF HAND, GET MORE MONEY')
+            bonusValue = account['bitch']['value']
+            bonusDescription = '\n\n:eyes::eyes: And **' + account['bitch']['name'] + '** won you ' + "{:,.2f}".format(int(bonusValue)) + ' dollars!'
+        account['value'] += int(arg1) + bonusValue
+        embedVar = discord.Embed(
+            title='Coin flip', description="You won " + "{:,.2f}".format(int(arg1)) + " dollars!" + bonusDescription, color=0x00ff00)
     else:
-        account['value'] -= int(arg1)
-        embedVar = discord.Embed(
-            title='Coin flip', description="You lost " + "{:.2f}".format(int(arg1)) + " dollars!", color=0x00ff00)
+        if 'finesse_the_dealer' in account['bitch']['traits']:
+            print('FINESSED, DO NOT LOSE MONEY')
+            finessed = random.randint(0,100)
+            if finessed >= 51:
+                embedVar = discord.Embed(
+                    title='Coin flip', description=":eyes::eyes:\nYou almost lost! But your bitch **" + account['bitch']['name'] + "** saved your ass :o", color=0x00ff00)
+            else:
+                account['value'] -= int(arg1)
+                embedVar = discord.Embed(
+                    title='Coin flip', description="You lost " + "{:,.2f}".format(int(arg1)) + " dollars!", color=0x00ff00)
+        else:
+            account['value'] -= int(arg1)
+            embedVar = discord.Embed(
+                title='Coin flip', description="You lost " + "{:,.2f}".format(int(arg1)) + " dollars!", color=0x00ff00)
      
     writeToAccountDb(account)
 
     await ctx.channel.send(embed=embedVar)
-
-    embedVar = displayProfile(account, ctx.message.author.avatar_url)
+    embedVar = displaySimpleProfile(account, ctx.message.author.avatar_url)
 
     await ctx.channel.send(embed=embedVar)
-        
+
+# Lottery
+@bot.command(
+    profile="lottery",
+    brief="lottery"
+)
+async def lottery(ctx, arg1 = 'info', arg2 = '-1'):
+    accounts = readAccountsFromDb()
+    for _account in accounts:
+        if _account['name'] == ctx.message.author.name:
+            account = _account
+            break
     
-# sell stonks
+    if (arg1 == 'info'):
+        embedVar = discord.Embed(
+            title='Lottery', description="The Billionaire Bot lottery takes place once a week and the big winner is announced Sunday Night at 7 pm EST.\n\nTo buy a ticket use the command !lottery buy x.\n\n*Tickets are on sale for " + str(TICKET_PRICE) +". Each user is limited to 100 tickets*", color=0x00ff00)
+        await ctx.channel.send(embed=embedVar)   
+        return
+    if (arg1 == 'buy'):
+        if (arg2.isnumeric()):
+            if (int(arg2) > 100):
+                embedVar = discord.Embed(
+                    title='Lottery', description="You can only buy a maximum of 100 tickets!", color=0x00ff00)
+                await ctx.channel.send(embed=embedVar)   
+                return
+
+            if (account['value'] > int(arg2) * TICKET_PRICE):
+                with open("data/lottery.json", "r") as file:
+                    allLottery = json.load(file)
+                
+                if (not(account['name'] in allLottery)):
+                    allLottery[account['name']] = int(arg2)
+                    account['value'] -= int(arg2) * TICKET_PRICE
+                    with open("data/accounts.json", "w") as file:
+                            json.dump(accounts, file)
+
+                    with open("data/lottery.json", "w") as file:
+                        json.dump(allLottery, file)
+
+                    embedVar = discord.Embed(
+                        title='Lottery', description="Congratulations you have bought yourself a ticket to the upcoming lottery!", color=0x00ff00)
+                    await ctx.channel.send(embed=embedVar)   
+                    return
+                else:
+                    if (allLottery[account['name']] + int(arg2) < 100):
+                        allLottery[account['name']] += int(arg2)
+                        account['value'] -= int(arg2) * TICKET_PRICE
+                        
+                        with open("data/accounts.json", "w") as file:
+                            json.dump(accounts, file)
+
+                        with open("data/lottery.json", "w") as file:
+                            json.dump(allLottery, file)
+
+                        embedVar = discord.Embed(
+                            title='Lottery', description="Congratulations you have bought yourself a ticket to the upcoming lottery!", color=0x00ff00)
+                        await ctx.channel.send(embed=embedVar)   
+                        return
+                    else:
+                        embedVar = discord.Embed(
+                            title='Lottery', description="You can afford these tickets but you can only buy " + str(100 - allLottery[account['name']]) + ' tickets!', color=0x00ff00)
+                        await ctx.channel.send(embed=embedVar)   
+                        return
+            else:
+                embedVar = discord.Embed(
+                    title='Lottery', description="You don't have enough funds to buy " + arg2 + " tickets.\n\nYou can purchase up to" + str(int(account['value']/TICKET_PRICE)) + " tickets.", color=0x00ff00)
+                await ctx.channel.send(embed=embedVar)   
+                return
+    
+# leaderboard
 @bot.command(
     profile="leaderboard",
     brief="leaderboard"
@@ -510,7 +654,7 @@ async def leaderboard(ctx):
                     haveStonk = liveStonk
 
             for _own in _stonk['own']:
-                myStonks += "  " + str(_own['quantity']) + " " + _stonk['stonk'] + " shares at $" + "{:.2f}".format(_own['priceBoughtAt']) + "\n"
+                myStonks += "  " + str(_own['quantity']) + " " + _stonk['stonk'] + " shares at $" + "{:,.2f}".format(_own['priceBoughtAt']) + "\n"
                 assetValue += float(_own['quantity']) * float(haveStonk['value'])
         netWorth = float(assetValue) + float(_account['value'])
         leaderboard.append((_account['name'], netWorth ))
@@ -520,7 +664,7 @@ async def leaderboard(ctx):
     showLeaderBoard = ''
     
     for leader in leaderboard:
-        showLeaderBoard += str(leader[0]) + " : ${:.2f}".format(leader[1])+'\n'
+        showLeaderBoard += str(leader[0]) + " : ${:,.2f}".format(leader[1])+'\n'
     
     embedVar = discord.Embed(
             title='Leaderboard', description="**Net Worth**\n\n" +str(showLeaderBoard), color=0x00ff00)       
@@ -642,10 +786,10 @@ def displayProfile(account, author_avatar_url):
         liveStonks = json.load(file)
 
     embedVar = discord.Embed(title=account['name'], description=account['job']['jobTitle'] +
-                             " ( $" + "{:.2f}".format(account['job']['rate']) + " per/hour)", color=0x00ff00)
+                             " ( $" + "{:,.2f}".format(account['job']['rate']) + " per/hour)", color=0x00ff00)
     embedVar.set_thumbnail(url=author_avatar_url)
     embedVar.add_field(name="Bank", value="$" +
-                       "{:.2f}".format(account['value']), inline=False)
+                       "{:,.2f}".format(account['value']), inline=False)
     embedVar.add_field(name="Bitch of the day", value=account['bitch']['name'] + " (" + str(
         account['bitch']['value']) + ")", inline=False)
     
@@ -659,16 +803,25 @@ def displayProfile(account, author_avatar_url):
                 haveStonk = liveStonk
 
         for _own in _stonk['own']:
-            myStonks += "  " + str(_own['quantity']) + " " + _stonk['stonk'] + " shares at $" + "{:.2f}".format(_own['priceBoughtAt']) + "\n"
+            myStonks += "  " + str(_own['quantity']) + " " + _stonk['stonk'] + " shares at $" + "{:,.2f}".format(_own['priceBoughtAt']) + "\n"
             assetValue += float(_own['quantity']) * float(haveStonk['value'])
 
     if (myStonks != ""):
-        embedVar.add_field(name="Asset Value", value="${:.2f}".format(assetValue), inline=False)
+        embedVar.add_field(name="Asset Value", value="${:,.2f}".format(assetValue), inline=False)
         embedVar.add_field(name="Stonks", value=myStonks, inline=False)
     else:
         embedVar.add_field(name="Stonks", value='You have no stonks.', inline=False)
     return embedVar
 
+
+# Display Simple Profile
+def displaySimpleProfile(account, author_avatar_url):
+    
+    embedVar = discord.Embed(title=account['name'], description='', color=0x00ff00)
+    embedVar.set_thumbnail(url=author_avatar_url)
+    embedVar.add_field(name="Bank", value="$" +
+                       "{:,.2f}".format(account['value']), inline=False)
+    return embedVar
 
 
 # Read Accounts
@@ -706,56 +859,59 @@ def writeToAccountDb(accountToWrite):
 
 # Caculating the bitches value
 async def bitchesValue(value, currentNetWorth, bitch, ctx):
-    '''
-        Bitch's traits:
-            - gamble
-            - jobs
-    '''
-    print(bitch['name'])
-    '''name = bitch['name']
-    
-    if (bitch['trait'] == 'gamble'):
-        description = ''
-    elif (bitch['trait'] == 'jobs'):
-        description = ''
-    '''
-    
-
-
-
+    ALL_BITCH_TRAITS = ['keep_job', 'best_job', 'card_count', 'finese_the_dealer', 'slight_of_hand']
+    randomTrait = random.choice(ALL_BITCH_TRAITS)
     if (value == 0):
         embedVar = discord.Embed(
             title='STINKY BITCH', description="UH OH YOU GOT STINKY BITCH. SHE IS ONLY DATING YOU FOR YOUR MONEY. SHE WANTS A DIVORCE ALREADY.\n\n**1/2X NET WORTH**", color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 0.5
-    elif (value < 10):
+    elif (value < 20):
         embedVar = discord.Embed(
             title='GOLD DIGGER', description="Sheeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeesh. Bitch maxed out all your credit cards.\n\n**-20% NET WORTH**", color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 0.8
-    elif (value < 30):
+    elif (value < 40):
+        bitch['traits'].append(randomTrait)
         embedVar = discord.Embed(
-            title='F', description="She likes yo ass... but you were caught looking at her mom. She steals the car, the kids, and your collection of The Bee Movies you have in the living room.\n\n**-10% NET WORTH**", color=0x00ff00)
+            title='F', description="She likes yo ass... but you were caught looking at her mom. She steals the car, the kids, and your collection of The Bee Movies you have in the living room.\n\n**-10% NET WORTH**\n\nTraits: " + bitch['traits'][0], color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 0.9
-    elif (value < 70):
+    elif (value < 60):
+        bitch['traits'].append(randomTrait)
         embedVar = discord.Embed(
-            title='Baddie', description="You find a nice baddie. She is a 6th grade teachers but provides no monetary gain to your life.\n\n**+0% NET WORTH**", color=0x00ff00)
+            title='Baddie', description="You find a nice baddie. She is a 6th grade teachers but provides no monetary gain to your life.\n\n**+0% NET WORTH**\n\nTraits: " + bitch['traits'][0], color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
         return currentNetWorth
-    elif (value < 90):
+    elif (value < 80):
+        bitch['traits'].append(randomTrait)
+        ALL_BITCH_TRAITS.remove(randomTrait)
+        secondTrait = random.choice(ALL_BITCH_TRAITS)
+        bitch['traits'].append(secondTrait)
         embedVar = discord.Embed(
-            title='She do be kinda smart', description="She got KNOWLEDGE. And she BAD? She posts regular instagram posts quoted \"Live, Laugh, Love.\" under a picture of her butt cheeks.\n\n**+10% NET WORTH**", color=0x00ff00)
+            title='She do be kinda smart', description="She got KNOWLEDGE. And she BAD? She posts regular instagram posts quoted \"Live, Laugh, Love.\" under a picture of her butt cheeks.\n\n**+10% NET WORTH**\n\nTraits: " + bitch['traits'][0] + " , " + bitch['traits'][1], color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 1.1
     elif (value < 99):
+        bitch['traits'].append(randomTrait)
+        ALL_BITCH_TRAITS.remove(randomTrait)
+        secondTrait = random.choice(ALL_BITCH_TRAITS)
+        bitch['traits'].append(secondTrait)
         embedVar = discord.Embed(
-            title='Baddest bitch in da club', description="She's an only fans model. Making millions herself. All the homies want her, and all the girls want to be her.\n\n**+20% NET WORTH**", color=0x00ff00)
+            title='Baddest bitch in da club', description="She's an only fans model. Making millions herself. All the homies want her, and all the girls want to be her.\n\n**+20% NET WORTH**\n\nTraits: " + bitch['traits'][0] + " , " + bitch['traits'][1], color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 1.2
     elif (value == 100):
+        bitch['traits'].append(randomTrait)
+        ALL_BITCH_TRAITS.remove(randomTrait)
+        secondTrait = random.choice(ALL_BITCH_TRAITS)
+        bitch['traits'].append(secondTrait)
+        
+        ALL_BITCH_TRAITS.remove(secondTrait)
+        thirdTrait = random.choice(ALL_BITCH_TRAITS)
+        bitch['traits'].append(thirdTrait)
         embedVar = discord.Embed(
-            title='MEGA BAD BITCH', description="You've found the one. She a billionaire herself. She is yo sugar mama.\n\n**2X NET WORTH**", color=0x00ff00)
+            title='MEGA BAD BITCH', description="You've found the one. She a billionaire herself. She is yo sugar mama.\n\n**2X NET WORTH**\n\nTraits: " + bitch['traits'][0] + " , " + bitch['traits'][1] + " , " + bitch['traits'][2], color=0x00ff00)
         await ctx.channel.send(embed=embedVar)
         return currentNetWorth * 2
     else:

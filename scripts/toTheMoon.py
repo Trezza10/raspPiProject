@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator)
 import json
 import os
+import datetime
 
 intents = discord.Intents.default()
 intents.members = True
@@ -37,14 +38,14 @@ with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/st
 async def on_ready():
     channel = client.get_channel(882939847998861362) #879488994960883723  #882939847998861362
     j = 0
-    SLEEP = 60
-
+    SLEEP = 60*6
+    timeRn = datetime.datetime.now()
     stonksName = ['OWO', 'HUH', 'YEP', 'DOG']
     randomStonk = random.choice([0,1,2,3])
     print(stonksName[randomStonk] + ' TO THE MOOON!!!!!!!!!!!!!!!!!! ')
 
     embedVar = discord.Embed(
-            title='TO THE MOOOOOOOON!!!!!!!!', description= '**' + stonksName[randomStonk] + '** HAS LIFT OFF!\n\nFOR THE NEXT 10 MINUTES **' + stonksName[randomStonk] + '** WILL SKY ROCKET IN PRICE!', color=0x00ff00)
+            title='TO THE MOOOOOOOON!!!!!!!!', description= '**' + stonksName[randomStonk] + '** HAS LIFT OFF!\n\nFOR THE NEXT HOUR ( ends at ' + str((timeRn.hour + 1) % 24) + ":" + str((timeRn.minute)) + ')**' + stonksName[randomStonk] + '** WILL SKY ROCKET IN PRICE!\n\n@here', color=0x00ff00)
     await channel.send(embed=embedVar)
     
 
@@ -87,10 +88,10 @@ async def on_ready():
     for stonk in stonks:
         if (stonk['beforeTheMoon'] != -1):
             embedVar = discord.Embed(
-                    title='MISSION COMPLETE', description= '**' + stonksName[randomStonk] + '** LANDED BACK TO EARTH!\n\nAND HAS RESUMED REGULAR DAY TO DAY ACTIVITIES', color=0x00ff00)
+                    title='MISSION COMPLETE', description= '**' + stonksName[randomStonk] + '** LANDED BACK TO EARTH!\n\nAND HAS RESUMED REGULAR DAY TO DAY ACTIVITIES\n\n@here', color=0x00ff00)
             await channel.send(embed=embedVar)
 
-            newVal = stonk['beforeTheMoon']
+            newVal = int((stonk['value'] - stonk['beforeTheMoon']) * random.choice([.25, .3, .35, .4, .45, .5])) + stonk['beforeTheMoon']
             stonk['beforeTheMoon'] = -1
             stonk['value'] = newVal
             stonk['history'].append(newVal)

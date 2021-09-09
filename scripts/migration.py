@@ -1,5 +1,6 @@
 import json
 import random
+import os
 
 VERSION = 2
 
@@ -7,13 +8,13 @@ VERSION = 2
 # VERSION 2
 #############
 if (VERSION == 2):
-    with open("../data/accounts.json", "r") as file:
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/accounts.json", "r") as file:
         allAccounts = json.load(file)
 
     for account in allAccounts:
         assetValue = 0
 
-        with open("../data/stonks.json", "r") as file:
+        with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/stonks.json", "r") as file:
             liveStonks = json.load(file)
 
         for _stonk in account['stonks']:
@@ -25,11 +26,26 @@ if (VERSION == 2):
                 assetValue += float(_own['quantity']) * float(haveStonk['value'])
             
         netWorth = float(assetValue) + float(account['value'])
+        
+        ALL_BITCH_TRAITS = ['keep_job', 'best_job', 'card_count', 'finese_the_dealer', 'slight_of_hand']
+        randomTrait = random.choice(ALL_BITCH_TRAITS)
+        ALL_BITCH_TRAITS.remove(randomTrait)
+        secondTrait = random.choice(ALL_BITCH_TRAITS)
+        ALL_BITCH_TRAITS.remove(secondTrait)
+        thirdTrait = random.choice(ALL_BITCH_TRAITS)
+        account['bitch']['traits'] = []
+        if (account['bitch']['value'] >= 20 and account['bitch']['value'] < 60):
+            account['bitch']['traits'].append(randomTrait)
+        elif (account['bitch']['value'] < 99):
+            account['bitch']['traits'].append(randomTrait)
+            account['bitch']['traits'].append(secondTrait)
+        elif (account['bitch']['value'] == 100):
+            account['bitch']['traits'].append(randomTrait)
+            account['bitch']['traits'].append(secondTrait)
+            account['bitch']['traits'].append(thirdTrait)
+        account['bitch']['balance'] = int(netWorth * (account['bitch']['value']/100) * 0.1)
 
-        account['bitch']['trait'] = random.choice(['gamble', 'jobs'])
-        account['bitch']['balance'] = netWorth * (account['bitch']['value']/100) * 0.2
-
-    with open("../data/accounts.json", "w") as file:
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/accounts.json", "w") as file:
         json.dump(allAccounts, file)
 
 
@@ -38,24 +54,24 @@ if (VERSION == 2):
 # VERSION 1
 #############
 if (VERSION == 1):
-    with open("../data/accounts.json", "r") as file:
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/accounts.json", "r") as file:
         allAccounts = json.load(file)
 
     for account in allAccounts:
         account['job']['date'] = -1
 
-    with open("../data/accounts.json", "w") as file:
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/accounts.json", "w") as file:
         json.dump(allAccounts, file)
 
 
 
 
-    with open("../data/stonks.json", "r") as file:
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/accounts.json", "r") as file:
         allStonks = json.load(file)
 
     for stonk in allStonks:
         stonk['dailyVolatility'] = [0.01, 0.03]
         stonk['influence'] = 0
 
-    with open("../data/stonks.json", "w") as file:
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/accounts.json", "w") as file:
         json.dump(allStonks, file)
