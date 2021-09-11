@@ -45,7 +45,7 @@ async def on_ready():
     print(stonksName[randomStonk] + ' TO THE MOOON!!!!!!!!!!!!!!!!!! ')
 
     embedVar = discord.Embed(
-            title='TO THE MOOOOOOOON!!!!!!!!', description= '**' + stonksName[randomStonk] + '** HAS LIFT OFF!\n\nFOR THE NEXT HOUR ( ends at ' + str((timeRn.hour + 1) % 24) + ":" + str((timeRn.minute)) + ')**' + stonksName[randomStonk] + '** WILL SKY ROCKET IN PRICE!\n\n@here', color=0x00ff00)
+            title='TO THE MOOOOOOOON!!!!!!!!', description= '**' + stonksName[randomStonk] + '** HAS LIFT OFF!\n\nFOR THE NEXT HOUR ( ends at ' + str((timeRn.hour + 1) % 24) + ":" + "{0:0=2d}".format((timeRn.minute)) + ')**' + stonksName[randomStonk] + '** WILL SKY ROCKET IN PRICE!\n\n@here', color=0x00ff00)
     await channel.send(embed=embedVar)
     
 
@@ -79,7 +79,10 @@ async def on_ready():
             json.dump(stonks, file)
 
         plotGraph()
-
+        if (j == 9):
+            embedVar = discord.Embed(
+                title='Returning from the moon!', description= '**' + stonksName[randomStonk] + '** IS ON ITS WAY HOME!\n\nEvent will end at ' + str((timeRn.hour + 1) % 24) + ":" + "{0:0=2d}".format(timeRn.minute) + ')!**\n\n ' + stonksName[randomStonk] + '**. SELL! SELL! SELL!\n\n@here', color=0x00ff00)
+            await channel.send(embed=embedVar)
         print('going to sleep')
         time.sleep(SLEEP)
         print('awake')

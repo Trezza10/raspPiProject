@@ -2,7 +2,62 @@ import json
 import random
 import os
 
-VERSION = 2
+VERSION = 3
+
+
+'''
+    "stonks" : [{
+        "stonk": "YEP",
+        "own": [
+          { "priceBoughtAt": 238.88, "quantity": 1 },
+          { "priceBoughtAt": 141.55, "quantity": 6 },
+          { "priceBoughtAt": 131.0, "quantity": 66 }
+        ]
+      }
+    ]
+
+    TO ->>
+
+    "stonksRemastered": {
+        "OWO": {
+            "120.18": 2,
+            "200.93": 3
+        },
+        "HUH": {
+            "29.30": 10,
+            "69.00": 32
+        }
+    }
+'''
+#############
+# VERSION 3
+#############
+if (VERSION == 3):
+    print('VERSION 3')
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/accounts.json", "r") as file:
+        allAccounts = json.load(file)
+
+    for account in allAccounts:
+        stonksRemastered = {}
+
+        for stonk in account['stonks']:
+            print(stonk['stonk'])
+            ownStonks = {}
+            for owned in stonk['own']:
+                if (str(owned['priceBoughtAt']) in ownStonks.keys()):
+                    ownStonks[str(owned['priceBoughtAt'])] += owned['quantity']
+                else:
+                    ownStonks[str(owned['priceBoughtAt'])] = owned['quantity']
+
+            stonksRemastered[stonk['stonk']] = ownStonks 
+
+        account['stonks'] = stonksRemastered
+        print('\n\n' + account['name'])
+        if 'DOG' in account['stonks'].keys():
+            print(account['stonks'])
+            
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/accounts.json", "w") as file:
+        json.dump(allAccounts, file)
 
 #############
 # VERSION 2

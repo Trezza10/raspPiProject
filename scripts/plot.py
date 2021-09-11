@@ -17,7 +17,7 @@ ax.set_ylabel('Price')
 ax.xaxis.label.set_color('white')        #setting up X-axis label color to yellow
 ax.yaxis.label.set_color('white')          #setting up Y-axis label color to blue
 
-ax.tick_params(axis='x', colors='white')    #setting up X-axis tick color to red
+#ax.tick_params(axis='x', colors='white')    #setting up X-axis tick color to red
 ax.tick_params(axis='y', colors='white')  #setting up Y-axis tick color to black
 
 ax.spines['left'].set_color('white')        # setting up Y-axis tick color to red
@@ -25,16 +25,16 @@ ax.spines['bottom'].set_color('white')         #setting up above X-axis tick col
 ax.spines['right'].set_color('white')        # setting up Y-axis tick color to red
 ax.spines['top'].set_color('white')         #setting up above X-axis tick color to red
 
-ax.xaxis.set_major_locator(MultipleLocator(3))
-ax.xaxis.set_major_formatter('{x:.0f}')
+#ax.xaxis.set_major_locator(MultipleLocator(3))
+#ax.xaxis.set_major_formatter('{x:.0f}')
 
 # For the minor ticks, use no labels; default NullFormatter.
-ax.xaxis.set_minor_locator(MultipleLocator(1))
+#ax.xaxis.set_minor_locator(MultipleLocator(1))
 
 names = []
 graphLen = len(allStonks[0]['history'])
 for stonk in allStonks:
-    graph = stonk['history']
+    graph = stonk['history'][graphLen - 6*10:] # stonk['history']
     name = stonk['stonk']
     names.append(name)
     plt.plot(graph)
@@ -43,6 +43,6 @@ for stonk in allStonks:
 # Function add a legend  
 plt.legend(names, loc ="lower right")
 
-plt.xlim([graphLen - 6*4, graphLen + 10])
+plt.xlim([0, 100]) # ([graphLen - 6*4, graphLen + 10])
 plt.savefig(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+'/stonksCharts.png', transparent=True)
 #plt.show()

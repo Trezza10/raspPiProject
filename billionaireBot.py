@@ -43,6 +43,7 @@ channelId = 633465922786689024 #864619752991096833
 BOT_IMAGE = 'https://www.media3.hw-static.com/wp-content/uploads/xx_55026731-638x425-638x425.jpeg'
 JOB_AVAILABILITY = 10
 TICKET_PRICE = 100
+ALL_STONKS = ['OWO', 'HUH', 'YEP', 'DOG']
 
 file = open('./../token.txt')
 token = file.read()
@@ -122,7 +123,7 @@ async def createAccount(ctx):
         account['value'] = 500.00
         account['debt'] = 0.00
         account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1, 'trait': [], 'balance': 0}
-        account['stonks'] = []
+        account['stonks'] = {}
 
         # Create embed message display
         embedVar = displayProfile(account, ctx.message.author.avatar_url)
@@ -155,14 +156,16 @@ async def bitch(ctx, arg1 = 'show', arg2 = -1):
             with open("data/stonks.json", "r") as file:
                 liveStonks = json.load(file)
 
-            for _stonk in _account['stonks']:
+            # New way
+            for _stonk in _account['stonks'].keys():
                 for liveStonk in liveStonks:
-                    if liveStonk['stonk'] == _stonk['stonk']:
+                   if liveStonk['stonk'] == _stonk['stonk']:
                         haveStonk = liveStonk
 
-                for _own in _stonk['own']:
-                    assetValue += float(_own['quantity']) * float(haveStonk['value'])
-                
+                for _share in _account['stonks'][_stonk]:
+                    assetValue +=  _account['stonks'][_stonk][_share] * float(haveStonk['value'])
+
+
             netWorth = float(assetValue) + float(_account['value'])
 
             randomBitch = allBitches[random.randint(0, len(allBitches)-1)]
@@ -260,8 +263,8 @@ async def bitch(ctx, arg1 = 'show', arg2 = -1):
     profile="stonks",
     brief="stonks"
 )
-async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1'):
-    if (arg1 == 'show' and arg2 == '-1' and arg3 == '-1'):
+async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1', arg4 = '-1'):
+    if (arg1 == 'show' and arg2 == '-1' and arg3 == '-1' and arg4 == '-1'):
         embedVar = discord.Embed(title='BillionaireBot',
                                 description='Stonks on the market. (Updated every 15 minutes)', color=0x00ff00)
 
@@ -279,11 +282,11 @@ async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1'):
         embedVar.set_image(url="attachment://stonksCharts.png")
         await ctx.send(file = file, embed=embedVar)
     elif (arg1 == 'buy'):
-        if (arg2.isnumeric() and (arg3.isnumeric() or arg3 == 'max')):
+        if ((arg2.isnumeric() or arg2 in ALL_STONKS) and (arg3.isnumeric() or arg3 == 'max')):
             await buyStonks(ctx, arg2, arg3)
     elif (arg1 == 'sell'):
-        if (arg2.isnumeric()):
-            await sellStonks(ctx, arg2)
+        if ((arg2.isnumeric() or arg2 in ALL_STONKS) and (isfloat(arg3) or (arg3 == 'all' and arg4 == '-1'))):
+            await sellStonks(ctx, arg2, arg3, arg4)
     else:
         embedVar = discord.Embed(title='Incorrect stonks command',
                              description='Use the following:\n\n!stonks\n\n!stonks buy x(stonk #), y(quantity)\n\n!stonks sell x(stonk #)', color=0x00ff00)
@@ -371,6 +374,22 @@ async def profile(ctx):
 
     await ctx.channel.send(embed=embedVar)
 
+# What's your portfolio
+@bot.command(
+    profile="portfolio",
+    brief="portfolio"
+)
+async def portfolio(ctx):
+    accounts = readAccountsFromDb()
+    for _account in accounts:
+        if _account['name'] == ctx.message.author.name:
+            account = _account
+            break
+
+    embedVar = displayPortfolio(account, ctx.message.author.avatar_url)
+
+    await ctx.channel.send(embed=embedVar)
+
 
 
 # Buy/sell stonks
@@ -381,9 +400,16 @@ async def buyStonks(ctx, arg1, arg2):
         allStonks = json.load(file)
 
     if (arg1.isnumeric()):
-        _stonkBuying = int(arg1) - 1
-        if not(0 <= _stonkBuying < len(allStonks)):
+        _stonkBuyingNumber = int(arg1) - 1
+        if not(0 <= _stonkBuyingNumber < len(allStonks)):
             return
+        else:
+            _stonkBuying = allStonks[int(_stonkBuyingNumber)]
+    
+    if (arg1 in ALL_STONKS):
+        for _stonk in allStonks:
+            if arg1 == _stonk['stonk']:
+                _stonkBuying = _stonk
 
     accounts = readAccountsFromDb()
     for _account in accounts:
@@ -392,71 +418,47 @@ async def buyStonks(ctx, arg1, arg2):
             break
 
     # enough money?
-    if (arg2 == 'max' and account['value'] >= allStonks[int(_stonkBuying)]['value']):
+    if (arg2 == 'max' and account['value'] >= _stonkBuying['value']):
         # Loop through all your stonks
         haveStonk = False
-        for _stonk in account['stonks']:
-            # check to see if you already have stonk of it
-            if allStonks[int(_stonkBuying)]['stonk'] == _stonk['stonk']:
-                haveStonk = True
-                # append x stonks to list of that
-                _stonk['own'].append(
-                    {
-                        'priceBoughtAt': allStonks[int(_stonkBuying)]['value'],
-                        'quantity': int(account['value']/allStonks[int(_stonkBuying)]['value'])
-                    }
-                )
-                print(_stonk)
 
-        if not(haveStonk):
-            account['stonks'].append(
-                {
-                    'stonk': allStonks[int(_stonkBuying)]['stonk'],
-                    'own': [
-                        {
-                            'priceBoughtAt': allStonks[int(_stonkBuying)]['value'],
-                            'quantity': int(account['value']/allStonks[int(_stonkBuying)]['value'])
-                        }
-                    ]
-                }
-            )
+        # New way
+        for _stonk in account['stonks'].keys():
+            if _stonk == _stonkBuying['stonk']:
+                haveStonk = True
+                if str(_stonkBuying['value']) in account['stonks'][_stonk].keys():
+                    account['stonks'][_stonk][str(_stonkBuying['value'])] += int(account['value']/_stonkBuying['value']) 
+                else:
+                    account['stonks'][_stonk][str(_stonkBuying['value'])] = int(account['value']/_stonkBuying['value']) 
+        if not (haveStonk):
+            account['stonks'][_stonkBuying['stonk']] = {
+                str(account['stonks'][_stonk][str(_stonkBuying['value'])]): int(account['value']/_stonkBuying['value'])
+            }
+
+        
         # Deduct moneys
-        account['value'] -= int(account['value'] / allStonks[int(_stonkBuying)]['value']) * allStonks[int(_stonkBuying)]['value']
-        embedVar = displayProfile(account, ctx.message.author.avatar_url)
+        account['value'] -= int(account['value'] / _stonkBuying['value']) * _stonkBuying['value']
+        embedVar = displayPortfolio(account, ctx.message.author.avatar_url)
         writeToAccountDb(account)
 
         await ctx.channel.send(embed=embedVar)
-    elif (arg2 != 'max' and account['value'] >= allStonks[int(_stonkBuying)]['value'] * int(arg2)):
+    elif (arg2 != 'max' and account['value'] >= _stonkBuying['value'] * int(arg2)):
         # Loop through all your stonks
         haveStonk = False
-        for _stonk in account['stonks']:
-            # check to see if you already have stonk of it
-            if allStonks[int(_stonkBuying)]['stonk'] == _stonk['stonk']:
+        for _stonk in account['stonks'].keys():
+            if _stonk == _stonkBuying['stonk']:
                 haveStonk = True
-                # append x stonks to list of that
-                _stonk['own'].append(
-                    {
-                        'priceBoughtAt': allStonks[int(_stonkBuying)]['value'],
-                        'quantity': int(arg2)
-                    }
-                )
-                print(_stonk)
-
-        if not(haveStonk):
-            account['stonks'].append(
-                {
-                    'stonk': allStonks[int(_stonkBuying)]['stonk'],
-                    'own': [
-                        {
-                            'priceBoughtAt': allStonks[int(_stonkBuying)]['value'],
-                            'quantity': int(arg2)
-                        }
-                    ]
-                }
-            )
+                if str(_stonkBuying['value']) in account['stonks'][_stonk].keys():
+                    account['stonks'][_stonk][str(_stonkBuying['value'])] += int(arg2) 
+                else:
+                    account['stonks'][_stonk][str(_stonkBuying['value'])] = int(arg2) 
+        if not (haveStonk):
+            account['stonks'][_stonkBuying['stonk']] = {
+                str(account['stonks'][_stonk][str(_stonkBuying['value'])]): int(arg2)
+            }
         # Deduct moneys
-        account['value'] -= allStonks[int(_stonkBuying)]['value'] * int(arg2)
-        embedVar = displayProfile(account, ctx.message.author.avatar_url)
+        account['value'] -= _stonkBuying['value'] * int(arg2)
+        embedVar = displayPortfolio(account, ctx.message.author.avatar_url)
         writeToAccountDb(account)
 
         await ctx.channel.send(embed=embedVar)
@@ -469,33 +471,39 @@ async def buyStonks(ctx, arg1, arg2):
 
 
 # sell stonks
-async def sellStonks(ctx, arg1):
-    print(arg1)
-
+async def sellStonks(ctx, arg1, arg2, arg3):
+    print(arg1, arg2, arg3)
+    # arg 1 = DOG, arg2 = 10.23/all, arg3 = quantity
     with open("data/stonks.json", "r") as file:
         allStonks = json.load(file)
 
-    if (arg1.isnumeric()):
-        _stonkSell = int(arg1) - 1
-        if not(0 <= _stonkSell < len(allStonks)):
-            return
-
+    # New way
     accounts = readAccountsFromDb()
     for _account in accounts:
         if _account['name'] == ctx.message.author.name:
             account = _account
             break
     
-    # Loop through all your stonks
-    for _stonk in account['stonks']:
-        # check to see if you already have stonk of it
-        if allStonks[_stonkSell]['stonk'] == _stonk['stonk']:
-            for own in _stonk['own']:
-                account['value'] += (allStonks[int(_stonkSell)]['value'] * own['quantity'])
-            account['stonks'].remove(_stonk) 
+    if arg1 in account['stonks'].keys():
+        if str(arg2) == 'all':
+            for share in account['stonks'][arg1].keys():
+                print(share)
+                account['value'] += (allStonks[ALL_STONKS.index(arg1)]['value'] * account['stonks'][arg1][share])
+            account['stonks'][arg1] = {}
+
+        if str(arg2) != 'all' and str(arg2) in account['stonks'][arg1]:
+            if (str(arg2)) in account['stonks'][arg1].keys():
+                if (arg3 != 'all' and arg3.isnumeric() and int(arg3) <= account['stonks'][arg1][str(arg2)]):
+                    account['value'] += allStonks[ALL_STONKS.index(arg1)]['value'] * int(arg3)
+                    account['stonks'][arg1][str(arg2)] -= int(arg3)
+                elif (arg3 == 'all'):
+                    account['value'] += allStonks[ALL_STONKS.index(arg1)]['value'] * account['stonks'][arg1][share]
+                    account['stonks'][arg1].pop(str(arg2), None)
+                else:
+                    return
         
     writeToAccountDb(account)
-    embedVar = displayProfile(account, ctx.message.author.avatar_url)
+    embedVar = displayPortfolio(account, ctx.message.author.avatar_url)
     await ctx.channel.send(embed=embedVar)
 
 
@@ -534,7 +542,7 @@ async def gamble(ctx, arg1):
         bonusDescription = ''
         if 'slight_of_hand' in account['bitch']['traits']:
             print('SLIGHT OF HAND, GET MORE MONEY')
-            bonusValue = account['bitch']['value']
+            bonusValue = (account['bitch']['value']/100) * random.choice([1, 1.1, 1.2,]) * int(arg1)
             bonusDescription = '\n\n:eyes::eyes: And **' + account['bitch']['name'] + '** won you ' + "{:,.2f}".format(int(bonusValue)) + ' dollars!'
         account['value'] += int(arg1) + bonusValue
         embedVar = discord.Embed(
@@ -575,8 +583,13 @@ async def lottery(ctx, arg1 = 'info', arg2 = '-1'):
             break
     
     if (arg1 == 'info'):
+        with open("data/lottery.json", "r") as file:
+            allLottery = json.load(file)
+        ticketDescription = ''
+        for ticketHolder in allLottery.keys():
+            ticketDescription += '\n' + ticketHolder + ' has ' + str(allLottery[ticketHolder]) + ' tickets.'
         embedVar = discord.Embed(
-            title='Lottery', description="The Billionaire Bot lottery takes place once a week and the big winner is announced Sunday Night at 7 pm EST.\n\nTo buy a ticket use the command !lottery buy x.\n\n*Tickets are on sale for " + str(TICKET_PRICE) +". Each user is limited to 100 tickets*", color=0x00ff00)
+            title='Lottery', description="The Billionaire Bot lottery takes place once a week and the big winner is announced Sunday Night at 7 pm EST.\n\nTo buy a ticket use the command !lottery buy x.\n\n*Tickets are on sale for " + "{:,.2f}".format(TICKET_PRICE) +". Each user is limited to 100 tickets*" + ticketDescription, color=0x00ff00)
         await ctx.channel.send(embed=embedVar)   
         return
     if (arg1 == 'buy'):
@@ -600,8 +613,10 @@ async def lottery(ctx, arg1 = 'info', arg2 = '-1'):
                     with open("data/lottery.json", "w") as file:
                         json.dump(allLottery, file)
 
+                    ticketDescription = '\n' + account['name'] + ' has ' + str(allLottery[account['name']]) + ' tickets.'
+
                     embedVar = discord.Embed(
-                        title='Lottery', description="Congratulations you have bought yourself a ticket to the upcoming lottery!", color=0x00ff00)
+                        title='Lottery', description="Congratulations you have bought yourself a ticket to the upcoming lottery this Sunday at 7PM EST!" + ticketDescription, color=0x00ff00)
                     await ctx.channel.send(embed=embedVar)   
                     return
                 else:
@@ -615,9 +630,11 @@ async def lottery(ctx, arg1 = 'info', arg2 = '-1'):
                         with open("data/lottery.json", "w") as file:
                             json.dump(allLottery, file)
 
+                        ticketDescription = '\n' + account['name'] + ' has ' + str(allLottery[account['name']]) + ' tickets.'
+
                         embedVar = discord.Embed(
-                            title='Lottery', description="Congratulations you have bought yourself a ticket to the upcoming lottery!", color=0x00ff00)
-                        await ctx.channel.send(embed=embedVar)   
+                            title='Lottery', description="Congratulations you have bought yourself a ticket to the upcoming lottery this Sunday at 7PM EST!" + ticketDescription, color=0x00ff00)
+                        await ctx.channel.send(embed=embedVar)     
                         return
                     else:
                         embedVar = discord.Embed(
@@ -781,9 +798,6 @@ async def blackjack(ctx, arg1 = 'setup', arg2 = '-1'):
 
 # Display Profile
 def displayProfile(account, author_avatar_url):
-    
-    with open("data/stonks.json", "r") as file:
-        liveStonks = json.load(file)
 
     embedVar = discord.Embed(title=account['name'], description=account['job']['jobTitle'] +
                              " ( $" + "{:,.2f}".format(account['job']['rate']) + " per/hour)", color=0x00ff00)
@@ -793,18 +807,30 @@ def displayProfile(account, author_avatar_url):
     embedVar.add_field(name="Bitch of the day", value=account['bitch']['name'] + " (" + str(
         account['bitch']['value']) + ")", inline=False)
     
+    return embedVar
+
+# Display Portfolio
+def displayPortfolio(account, author_avatar_url):
+    with open("data/stonks.json", "r") as file:
+        liveStonks = json.load(file)
+
+    embedVar = discord.Embed(title=account['name'] + "'s portfolio", color=0x00ff00)
+    embedVar.set_thumbnail(url=author_avatar_url)
+    embedVar.add_field(name="Bank", value="$" +
+                "{:,.2f}".format(account['value']), inline=False)
     assetValue = 0
 
     myStonks = ""
 
     for _stonk in account['stonks']:
+        print(_stonk)
         for liveStonk in liveStonks:
-            if liveStonk['stonk'] == _stonk['stonk']:
+            if liveStonk['stonk'] == _stonk:
                 haveStonk = liveStonk
 
-        for _own in _stonk['own']:
-            myStonks += "  " + str(_own['quantity']) + " " + _stonk['stonk'] + " shares at $" + "{:,.2f}".format(_own['priceBoughtAt']) + "\n"
-            assetValue += float(_own['quantity']) * float(haveStonk['value'])
+        for share in account['stonks'][_stonk].keys():
+            myStonks += "  " + str(account['stonks'][_stonk][share]) + " " + _stonk + " shares at $" + "{:,.2f}".format(float(share)) + "\n"
+            assetValue += float(account['stonks'][_stonk][share]) * float(haveStonk['value'])
 
     if (myStonks != ""):
         embedVar.add_field(name="Asset Value", value="${:,.2f}".format(assetValue), inline=False)
@@ -823,6 +849,12 @@ def displaySimpleProfile(account, author_avatar_url):
                        "{:,.2f}".format(account['value']), inline=False)
     return embedVar
 
+def isfloat(value):
+  try:
+    float(value)
+    return True
+  except ValueError:
+    return False
 
 # Read Accounts
 def readAccountsFromDb():
