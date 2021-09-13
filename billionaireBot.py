@@ -666,13 +666,14 @@ async def leaderboard(ctx):
         myStonks = ""
 
         for _stonk in _account['stonks']:
+            print(_stonk)
             for liveStonk in liveStonks:
-                if liveStonk['stonk'] == _stonk['stonk']:
+                if liveStonk['stonk'] == _stonk:
                     haveStonk = liveStonk
 
-            for _own in _stonk['own']:
-                myStonks += "  " + str(_own['quantity']) + " " + _stonk['stonk'] + " shares at $" + "{:,.2f}".format(_own['priceBoughtAt']) + "\n"
-                assetValue += float(_own['quantity']) * float(haveStonk['value'])
+            for share in _account['stonks'][_stonk].keys():
+                myStonks += "  " + str(_account['stonks'][_stonk][share]) + " " + _stonk + " shares at $" + "{:,.2f}".format(float(share)) + "\n"
+                assetValue += float(_account['stonks'][_stonk][share]) * float(haveStonk['value'])
         netWorth = float(assetValue) + float(_account['value'])
         leaderboard.append((_account['name'], netWorth ))
     
