@@ -159,7 +159,7 @@ async def bitch(ctx, arg1 = 'show', arg2 = -1):
             # New way
             for _stonk in _account['stonks'].keys():
                 for liveStonk in liveStonks:
-                   if liveStonk['stonk'] == _stonk['stonk']:
+                   if liveStonk['stonk'] == _stonk:
                         haveStonk = liveStonk
 
                 for _share in _account['stonks'][_stonk]:
