@@ -432,7 +432,7 @@ async def buyStonks(ctx, arg1, arg2):
                     account['stonks'][_stonk][str(_stonkBuying['value'])] = int(account['value']/_stonkBuying['value']) 
         if not (haveStonk):
             account['stonks'][_stonkBuying['stonk']] = {
-                str(account['stonks'][_stonk][str(_stonkBuying['value'])]): int(account['value']/_stonkBuying['value'])
+                str(_stonkBuying['value']): int(account['value']/_stonkBuying['value'])
             }
 
         
@@ -454,7 +454,7 @@ async def buyStonks(ctx, arg1, arg2):
                     account['stonks'][_stonk][str(_stonkBuying['value'])] = int(arg2) 
         if not (haveStonk):
             account['stonks'][_stonkBuying['stonk']] = {
-                str(account['stonks'][_stonk][str(_stonkBuying['value'])]): int(arg2)
+                str(_stonkBuying['value']): int(arg2)
             }
         # Deduct moneys
         account['value'] -= _stonkBuying['value'] * int(arg2)

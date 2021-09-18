@@ -48,7 +48,7 @@ async def on_ready():
             title='Weekly Lottery!', description= 'Welcome to our weekly lottery! A winner will be announced in 15 minutes at 8:00 PM EST!\n\nGood luck!\n\n@here', color=0x00ff00)
     await channel.send(embed=embedVar)
     
-    time.sleep(SLEEP)
+    #time.sleep(SLEEP)
 
     allTickets = []
 
@@ -62,8 +62,17 @@ async def on_ready():
     for account in accounts:
         if account['name'] == winner:
             account['value'] += LOTTERY_PRIZE
+            
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/accounts.json", "w") as file:
+        json.dump(accounts, file)
+    
+    newLottery = {}
+    with open(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+"/data/lottery.json", "w") as file:
+        json.dump(newLottery, file)
+            
     embedVar = discord.Embed(
             title='Weekly Lottery!', description= 'Congratulations to:\n\n**' + winner + '**\n\nYou have won ' + "${:,.2f}".format(LOTTERY_PRIZE) + ' dollars!!\n\n@here', color=0x00ff00)
+    await channel.send(embed=embedVar)
     exit()
     
 
