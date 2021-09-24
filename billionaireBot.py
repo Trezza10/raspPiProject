@@ -264,7 +264,7 @@ async def bitch(ctx, arg1 = 'show', arg2 = -1):
     brief="stonks"
 )
 async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1', arg4 = '-1'):
-    if (arg1 == 'show' and arg2 == '-1' and arg3 == '-1' and arg4 == '-1'):
+    if (arg1 == 'show' and arg2 == '-1'and arg3 == '-1' and arg4 == '-1'):
         embedVar = discord.Embed(title='BillionaireBot',
                                 description='Stonks on the market. (Updated every 15 minutes)', color=0x00ff00)
 
@@ -280,6 +280,24 @@ async def stonks(ctx, arg1 = 'show', arg2 = '-1', arg3 = '-1', arg4 = '-1'):
         
         file = discord.File("stonksCharts.png")
         embedVar.set_image(url="attachment://stonksCharts.png")
+        await ctx.send(file = file, embed=embedVar)
+    elif (arg1 == 'show' and arg2 in ALL_STONKS and arg3 == '-1' and arg4 == '-1'):
+        embedVar = discord.Embed(title='BillionaireBot',
+                                description='Stonks on the market. (Updated every 15 minutes)', color=0x00ff00)
+
+        allStonks = readStonksFromDb()
+
+        i = 1
+        for stonk in allStonks:
+            if (arg2 == stonk):
+                stonkName = stonk['stonk']
+                stonkValue = stonk['value']
+                embedVar.add_field(name="[" + str(i) + "] " + stonkName,
+                                value="$" + "{:,.2f}".format(stonkValue) + " ", inline=False)
+                i += 1
+        
+        file = discord.File("stonksCharts" + arg2 + ".png")
+        embedVar.set_image(url="attachment://stonksCharts" + arg2 + ".png")
         await ctx.send(file = file, embed=embedVar)
     elif (arg1 == 'buy'):
         if ((arg2.isnumeric() or arg2 in ALL_STONKS) and (arg3.isnumeric() or arg3 == 'max')):
@@ -533,7 +551,7 @@ async def gamble(ctx, arg1):
     bonusChance = 0
     
     if 'card_count' in account['bitch']['traits']:
-        bonusChance = int(account['bitch']['value'] / 5)
+        bonusChance = int(account['bitch']['value'] / 8)
 
     _coinFlip = random.randint(0,100) + bonusChance
     
@@ -542,8 +560,10 @@ async def gamble(ctx, arg1):
         bonusDescription = ''
         if 'slight_of_hand' in account['bitch']['traits']:
             print('SLIGHT OF HAND, GET MORE MONEY')
-            bonusValue = (account['bitch']['value']/100) * random.choice([1, 1.1, 1.2,]) * int(arg1)
-            bonusDescription = '\n\n:eyes::eyes: And **' + account['bitch']['name'] + '** won you ' + "{:,.2f}".format(int(bonusValue)) + ' dollars!'
+            slightOfHand = random.randint(0,100)
+            if slightOfHand >= 51:
+                bonusValue = (account['bitch']['value']/100) * random.choice([.35,.4,.45,.5, .55, .6,.65]) * int(arg1)
+                bonusDescription = '\n\n:eyes::eyes: And **' + account['bitch']['name'] + '** won you ' + "{:,.2f}".format(int(bonusValue)) + ' dollars!'
         account['value'] += int(arg1) + bonusValue
         embedVar = discord.Embed(
             title='Coin flip', description="You won " + "{:,.2f}".format(int(arg1)) + " dollars!" + bonusDescription, color=0x00ff00)

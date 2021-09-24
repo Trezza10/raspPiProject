@@ -65,7 +65,7 @@ async def on_ready():
             else:
                 daily_vol = random.uniform(stonks[i]['dailyVolatility'][0]*2.5, stonks[i]['dailyVolatility'][1]*2.5)
                 lastVal = stonks[i]['value']
-                newVal = round(lastVal * (1 + np.random.normal(stonks[i]['influence'] + 0.1, daily_vol)), 2)
+                newVal = round(lastVal * (1 + np.random.normal(stonks[i]['influence'] + random.choice([-0.15, -0.1, -0.05, 0, 0.05, 0.1, 0.15]), daily_vol)), 2)
                 if j == 0:
                     stonks[i]['beforeTheMoon'] = lastVal
                 stonks[i]['value'] = newVal
@@ -81,7 +81,7 @@ async def on_ready():
         plotGraph()
         if (j == 9):
             embedVar = discord.Embed(
-                title='Returning from the moon!', description= '**' + stonksName[randomStonk] + '** IS ON ITS WAY HOME!\n\nEvent will end at ' + str((timeRn.hour + 1) % 24) + ":" + "{0:0=2d}".format(timeRn.minute) + ')!**\n\n ' + stonksName[randomStonk] + '**. SELL! SELL! SELL!\n\n@here', color=0x00ff00)
+                title='Returning from the moon!', description= '**' + stonksName[randomStonk] + '** IS ON ITS WAY HOME!\n\nEvent will end at ' + str((timeRn.hour + 1) % 24) + ":" + "{0:0=2d}".format(timeRn.minute) + ' EST!**\n\n ' + stonksName[randomStonk] + '**. SELL! SELL! SELL!\n\n@here', color=0x00ff00)
             await channel.send(embed=embedVar)
         print('going to sleep')
         time.sleep(SLEEP)

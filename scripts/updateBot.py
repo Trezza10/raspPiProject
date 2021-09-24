@@ -36,8 +36,8 @@ async def on_ready():
         if (i == randomStonk):
             randomEvent = random.choice([-2,-1, 1, 2]) # (Really bad, bad, neutral, good, really good)
         else:
-            randomEvent = 0 #neutral day
-
+            randomEvent = 0 #neutral day [0.01, 0.03]
+        allStonks[i]['dailyVolatility'] = [random.choice([0.005, 0.01, 0.015, 0.02, 0.025]), random.choice([0.025,0.03,0.035,0.04])]
         if (randomEvent == -2):
             dailyReport += "**UH OH!**\n\n**" + allStonks[i]['stonk'] + "'s** CEO *accidentally* stuck his dick into a microwave.\n"
             allStonks[i]['influence'] = -0.01
@@ -62,21 +62,49 @@ async def on_ready():
     dailyReport += '\n'
 
     for account in allAccounts:
+        ALL_BITCH_TRAITS = ['keep_job', 'best_job', 'card_count', 'finese_the_dealer', 'slight_of_hand']
         if ('keep_job' not in account['bitch']['traits']):
             account['job']['date'] = -1
             account['job']['jobTitle'] = "Jobless"
             account['job']['rate'] = 0
-        #if (account['bitch']['name'] != 'Nobody' and account['bitch']['balance'] > 0):
-            #excuses = [
-            #    'bc you were too cheap.', 
-            #    'bc you did not treat her right.', 
-            #    'bc you did not spend enough time with her.', 
-            #    'bc she met another man.',
-            #    'bc she thought you were too broke for her.',
-            #    'bc she did not like yo ass.'
-            #]
-            #dailyReport += '\n-**' + account['name'] + '** lost your bitch, ' + account['bitch']['name'] + excuses[random.randint(0,5)]
-            #account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1, 'traits': [], 'balance': 0}
+        if (account['bitch']['name'] != 'Nobody' and account['bitch']['balance'] > 0):
+            excuses = [
+                ', bc you were too cheap... come on man.', 
+                ', bc you did not treat her like a QUEEN', 
+                ', bc you did not spend enough time with her.', 
+                ', bc she met another man.',
+                ', bc you just got TOO much money. SIKE.',
+                ', bc you kept talkin that good game and fell short my guy.',
+                ', bc she thought you were too broke for her.',
+                ', bc she low key kinda a man and dealing with shit.',
+                ', bc she be shiddn, fartn, and cummn.',
+                ', bc she did not like yo ass.'
+            ]
+            dailyReport += '\n- **' + account['name'] + '** lost your bitch, ' + account['bitch']['name'] + excuses[random.randint(0,5)]
+            account['bitch'] = {'name': 'Nobody', 'value': 0, 'date': -1, 'traits': [], 'balance': 0}
+        else:
+            assetValue = 0
+            for _stonk in account['stonks'].keys():
+                for liveStonk in allStonks:
+                   if liveStonk['stonk'] == _stonk:
+                        haveStonk = liveStonk
+
+                for _share in account['stonks'][_stonk]:
+                    assetValue +=  account['stonks'][_stonk][_share] * float(haveStonk['value'])
+
+
+            netWorth = float(assetValue) + float(account['value'])
+            account['bitch']['value'] += 5
+            account['bitch']['balance'] = netWorth * (account['bitch']['value']/100) * 0.2
+            if account['bitch']['value'] - 60 < 5 or account['bitch']['value'] - 100 < 5 or account['bitch']['value'] - 125 < 5 or account['bitch']['value'] - 150 < 5:
+                for trait in account['bitch']['traits']:
+                    ALL_BITCH_TRAITS.remove(trait)
+                    
+                if len(ALL_BITCH_TRAITS) != 0:
+                    randTrait = ALL_BITCH_TRAITS[random.randint(0,len(ALL_BITCH_TRAITS) - 1)]
+                    account['bitch']['traits'].append(randTrait)
+                    dailyReport += '\n- **' + account['name'] + ', your bitch gained the **' + randTrait + '** trait!' 
+
             
 
     dailyReport += "\n\n...... Aaaandddd you lost your job."
