@@ -142,7 +142,7 @@ async def createAccount(ctx):
     profile="Find your bad bitch TODAY",
     brief="Find your bad bitch TODAY"
 )
-async def bitch(ctx, arg1 = 'show', arg2 = -1):
+async def bitch(ctx, arg1 = 'show', arg2 = '-1'):
     if (arg1 == 'get'):
         today = int(datetime.datetime.now().day)
         accounts = readAccountsFromDb()
@@ -213,42 +213,43 @@ async def bitch(ctx, arg1 = 'show', arg2 = -1):
                 account = _account
                 break
         
-        if ((str(arg2).isnumeric() and account['value'] < int(arg2)) or (arg2 == 'all' and account['value'] < account['bitch']['balance'])):
-            embedVar = discord.Embed(
-                title='Not enough funds', description="You can pay her a maximum of " + "{:,.2f}".format(account['value']) + ' dollars', color=0x00ff00)
-            await ctx.channel.send(embed=embedVar)
-            return
         if (account['bitch']['name'] == 'Nobody'):
             embedVar = discord.Embed(
                 title='You aint got bitches', description="You aint got bitches to give nothing to my guy. Either go get a bitch or go listen to Drake on spotify.", color=0x00ff00)
             await ctx.channel.send(embed=embedVar)
             return
-
-        if (account['bitch']['balance'] <= 0):
-            embedVar = discord.Embed(
-                title='Boiiii whatchu doing', description="You aint supposed to OVER pay yo bitch.\n\n\n\nThe hell is wrong with you.....", color=0x00ff00)
-            await ctx.channel.send(embed=embedVar)
-            return
         
         if (arg2 == 'all'):
-            account['value'] -= account['bitch']['balance']
-            account['bitch']['balance'] -= 0
-            account['bitch']['value'] += 5
-            embedVar = discord.Embed(
-                    title='Payment Accepted', description=str(account['bitch']['name']) + ' is quite happy now. She now might reconsider leaving your broke ass for someone else.', color=0x00ff00)
-            await ctx.channel.send(embed=embedVar)
-        else:
-            account['value'] -= int(arg2)
-            account['bitch']['balance'] -= int(arg2)
-            if (account['bitch']['balance'] <= 0):
+            if (account['value'] < account['bitch']['balance']):
+                embedVar = discord.Embed(
+                    title='Not enough funds', description="You can pay her a maximum of " + "{:,.2f}".format(account['value']) + ' dollars', color=0x00ff00)
+                await ctx.channel.send(embed=embedVar)
+                return
+            else:
+                account['value'] -= account['bitch']['balance']
+                account['bitch']['balance'] -= 0
                 account['bitch']['value'] += 5
                 embedVar = discord.Embed(
-                    title='Payment Accepted', description=str(account['bitch']['name']) + ' is quite happy now. She now might reconsider leaving your broke ass for someone else.', color=0x00ff00)
+                        title='Payment Accepted', description=str(account['bitch']['name']) + ' is quite happy now. She now might reconsider leaving your broke ass for someone else.', color=0x00ff00)
                 await ctx.channel.send(embed=embedVar)
-            else:
+        else:
+            if (str(arg2).isnumeric() and account['value'] < int(arg2)):
                 embedVar = discord.Embed(
-                    title='Payment Accepted', description=str(account['bitch']['name']) + ' accepts the jesture... but still wants $' + "{:,.2f}".format(account['bitch']['balance']) + ' dollars', color=0x00ff00)
+                    title='Not enough funds', description="You can pay her a maximum of " + "{:,.2f}".format(account['value']) + ' dollars', color=0x00ff00)
                 await ctx.channel.send(embed=embedVar)
+                return
+            else:
+                account['value'] -= int(arg2)
+                account['bitch']['balance'] -= int(arg2)
+                if (account['bitch']['balance'] <= 0):
+                    account['bitch']['value'] += 5
+                    embedVar = discord.Embed(
+                        title='Payment Accepted', description=str(account['bitch']['name']) + ' is quite happy now. She now might reconsider leaving your broke ass for someone else.', color=0x00ff00)
+                    await ctx.channel.send(embed=embedVar)
+                else:
+                    embedVar = discord.Embed(
+                        title='Payment Accepted', description=str(account['bitch']['name']) + ' accepts the jesture... but still wants $' + "{:,.2f}".format(account['bitch']['balance']) + ' dollars', color=0x00ff00)
+                    await ctx.channel.send(embed=embedVar)
         
         writeToAccountDb(account)
     else:
